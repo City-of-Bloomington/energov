@@ -53,7 +53,7 @@ select n.name_num   as contact_id,
        --           as note_date
 from rental.name n
 where n.notes is not null;
-       
+
 
 -- ------------------------
 -- Permits
@@ -77,3 +77,31 @@ select r.id              as permit_number,
        --                as assigned_to
 from rental.registr r
 join rental.prop_status s on r.property_status=s.status;
+
+-- permit_contacts
+select r.id              as permit_number,
+       n.name_num        as contact_id,
+       'agent'           as contact_type,
+       0                 as primary_billing_contact
+from rental.registr r
+join rental.name    n on r.agent=n.name_num;
+
+select id                as permit_number,
+       name_num          as contact_id,
+       'owner'           as contact_type,
+       1                 as primary_billing_contact
+from rental.regid_name;
+
+-- ------------------------
+-- Inspections
+-- ------------------------
+select i.id              as inspection_number,
+       i.inspection_type as inspection_type,
+       i.time_status     as inspection_status,
+       i.inspection_date as create_date,
+       --                as requested_for_date,
+       --                as scheduled_for_date,
+       --                as attempt_number,
+       1                 as completed,
+
+from rental.inspections i
