@@ -1,0 +1,47 @@
+---
+- hosts: 'energov'
+  become: "yes"
+  roles:
+    - "City-of-Bloomington.php"
+
+  tasks:
+    - name: 'Import Microsoft GPG Key'
+      apt_key:
+        url: 'https://packages.microsoft.com/keys/microsoft.asc'
+
+    - name: "Add Microsoft PPA"
+      apt_repository:
+        repo: 'deb [arch=amd64,armhf,arm64] https://packages.microsoft.com/ubuntu/20.04/prod focal main'
+        filename: 'microsoft'
+
+    - name: "Install php and related packages"
+      apt:
+        name: "{{ packages }}"
+        state: "present"
+      vars:
+        packages:
+        - 'php-mysql'
+        - 'php-dev'
+        - "unixodbc"
+        - "unixodbc-dev"
+        - 'msodbcsql17'
+        - 'mssql-tools'
+
+    - name: 'Install PECL libraries for mssql'
+      pear:
+        name: "{{ packages }}"
+        state: 'present'
+      vars:
+        packages:
+        - 'pecl/sqlsrv'
+        - 'pecl/pdo_sqlsrv'
+
+    - name: 'Enable PHP modules'
+      copy:
+        src: "{{ files }}"
+        state: 'present'
+      vars:
+        files:
+        - 'sqlsrv.ini'
+        - 'pdo_sqlsrv.ini'
+...
