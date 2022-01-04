@@ -60,7 +60,7 @@ where n.notes is not null;
 select r.id              as permit_number,
        'rental'          as permit_type,
        s.status_text     as permit_sub_type,
-       case when r.inactive='Y' then 'inactive' else 'active' end as permit_status,
+       case when r.inactive is null then 'active' else 'inactive' end as permit_status,
        --                as district,
        r.registered_date as apply_date,
        --                as permit_description,
@@ -80,17 +80,16 @@ join rental.prop_status s on r.property_status=s.status;
 select r.id         as permit_number,
        case when subunit_id is not null then 1 else 0 end as main_address,
        --           as address_type,
-       --           as address_type,
-       --           as street_number,
-       --           as pre_direction,
-       --           as street_name,
-       --           as street_type,
-       --           as post_direction,
-       --           as unit_suite_number,
+       a.street_num           as street_number,
+       a.street_dir           as pre_direction,
+       a.street_name           as street_name,
+       a.street_type           as street_type,
+       a.post_dir           as post_direction,
+       a.sud_type || ' ' || a.sud_num           as unit_suite_number,
        --           as address_line_3,
        --           as po_box,
        --           as city,
-       --           as state_code,
+       'IN'           as state_code,
        --           as province,
        --           as zip,
        --           as county_code,
@@ -98,8 +97,8 @@ select r.id         as permit_number,
        --           as country_type,
        --           as last_update_date,
        --           as last_update_user
-from rental.registr          r
-join rental.rental_addresses a on r.id=a.id
+from rental.registr  r
+join rental.address2 a on r.id=a.registr_id;
 
 -- permit_contact
 select r.id              as permit_number,

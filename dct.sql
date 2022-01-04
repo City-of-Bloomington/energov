@@ -17,7 +17,8 @@ create table contact (
     last_update_date        datetime,
     last_update_user        varchar(100),
     legacy_data_source_name varchar(200),
-    isactive                bit          not null
+    isactive                bit          not null,
+    legacy_id               int          not null
 );
 
 create table contact_address (
@@ -54,12 +55,12 @@ create table contact_note (
 );
 
 create table permit (
-    permit_number           int          not null primary key identity,
+    permit_number           int          not null primary key,
     permit_type             varchar(200),
     permit_sub_type         varchar(200),
     permit_status           varchar(200),
     district                varchar(200),
-    apply_date              date         not null,
+    apply_date              date,
     permit_description      varchar(200),
     issue_date              date,
     expire_date             date,
@@ -81,4 +82,28 @@ create table permit_contact (
     primary_billing_contact bit,
     foreign key (permit_number) references permit (permit_number),
     foreign key (contact_id   ) references contact(contact_id)
+);
+
+create table permit_address (
+    permit_number int not null,
+    main_address      bit,
+    address_type      varchar(100),
+    street_number     varchar(400),
+    pre_direction     varchar(60 ),
+    street_name       varchar(400),
+    street_type       varchar(100),
+    post_direction    varchar(60 ),
+    unit_suite_number varchar(40 ),
+    address_line_3    varchar(400),
+    po_box            varchar(100),
+    city              varchar(100),
+    state_code        varchar(100),
+    province          varchar(100),
+    zip               varchar(100),
+    county_code       varchar(100),
+    country_code      varchar(100),
+    country_type      varchar(100) not null,
+    last_update_date  datetime,
+    last_update_user  varchar(100),
+    foreign key (permit_number) references permit(permit_number)
 );
