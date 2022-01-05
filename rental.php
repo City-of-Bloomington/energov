@@ -18,6 +18,7 @@ if (!is_dir(SITE_HOME.'/rental')) { mkdir(SITE_HOME.'/rental'); }
 // $energov->query('delete from permit');
 
 $energov->query('delete from contact_address');
+$energov->query('delete from contact_note');
 $energov->query('delete from contact');
 $energov->query("dbcc checkident('contact', RESEED, 0)");
 

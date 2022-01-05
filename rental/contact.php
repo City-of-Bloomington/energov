@@ -17,6 +17,10 @@ $contact_fields = [
     'legacy_data_source_name',
     'legacy_id'
 ];
+$note_fields = [
+    'contact_id',
+    'note_text'
+];
 $address_fields = [
     'contact_id',
     'street_number',
@@ -32,6 +36,10 @@ $columns = implode(',', $contact_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
 $insert_contact  = $energov->prepare("insert into contact ($columns) values($params)");
 
+$columns = implode(',', $note_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $note_fields));
+$insert_note     = $energov->prepare("insert into contact_note ($columns) values($params)");
+
 $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $energov->prepare("insert into contact_address ($columns) values($params)");
@@ -46,6 +54,7 @@ $select  = "select n.name_num   as legacy_id,
                    1            as isactive,
                    0            as is_company,
                    0            as is_individual,
+                   n.notes      as note_text,
                    n.address,
                    n.city,
                    n.state,
@@ -59,6 +68,15 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     $insert_contact->execute($data);
     $contact_id = $energov->lastInsertId();
 
+    if ($row['note_text']) {
+        $data = [
+            'contact_id' => $contact_id,
+            'note_text'  => $row['note_text']
+        ];
+        print_r($data);
+        $insert_note->execute($data);
+    }
+
     if ($row['address']) {
         $a = MasterAddress::parseAddress($row['address']);
         $data = [
@@ -71,7 +89,6 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             'unit_suite_number' => MasterAddress::subunit($a),
             'country_type'      => 'unknown'
         ];
-        print_r($data);
         $insert_address->execute($data);
     }
 }
