@@ -15,6 +15,29 @@ class MasterAddress
         return self::doJsonRequest($url);
 	}
 
+	/**
+	 * Creates the full street number portion from a parse response
+	 */
+	public static function streetNumber(array $parse): string
+	{
+        $out = [];
+        if (isset($parse['street_number_prefix'])) { $out[] = $parse['street_number_prefix']; }
+        if (isset($parse['street_number'       ])) { $out[] = $parse['street_number'       ]; }
+        if (isset($parse['street_number_suffix'])) { $out[] = $parse['street_number_suffix']; }
+        return implode(' ', $out);
+	}
+
+	/**
+	 * Creates a full subunit label from a parse response
+	 */
+	public static function subunit(array $parse): string
+	{
+        $out = [];
+        if (isset($parse['subunitType'      ])) { $out[] = $parse['subunitType'      ]; }
+        if (isset($parse['subunitIdentifier'])) { $out[] = $parse['subunitIdentifier']; }
+        return implode(' ', $out);
+	}
+
 	private static function get(string $url): ?string
 	{
 		$request = curl_init($url);

@@ -6,62 +6,72 @@
  * @param $energov  PDO connection to DCT database
  */
 declare (strict_types=1);
-$sql = "insert into contact (
-             first_name,
-             email,
-             business_phone,
-             home_phone,
-             legacy_data_source_name,
-             isactive,
-             is_company,
-             is_individual,
-             legacy_id
-         )
-        values(
-             :first_name,
-             :email,
-             :business_phone,
-             :home_phone,
-             :legacy_data_source_name,
-             :isactive,
-             :is_company,
-             :is_individual,
-             :legacy_id
-         )";
-$insert = $energov->prepare($sql);
+$contact_fields = [
+    'first_name',
+    'email',
+    'business_phone',
+    'home_phone',
+    'isactive',
+    'is_company',
+    'is_individual',
+    'legacy_data_source_name',
+    'legacy_id'
+];
+$address_fields = [
+    'contact_id',
+    'street_number',
+    'pre_direction',
+    'street_name',
+    'street_type',
+    'post_direction',
+    'unit_suite_number',
+    'country_type'
+];
 
-$sql = "select n.name_num   as legacy_id,
-               n.name       as first_name,
-               n.email      as email,
-               n.phone_work as business_phone,
-               n.phone_home as home_phone,
-               'rentpro'    as legacy_data_source_name,
-               1            as isactive,
-               0            as is_company,
-               0            as is_individual,
-               n.address,
-               n.city,
-               n.state,
-               n.zip
-        from rental.name n";
-$result = $rental->query($sql);
+$columns = implode(',', $contact_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
+$insert_contact  = $energov->prepare("insert into contact ($columns) values($params)");
+
+$columns = implode(',', $address_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
+$insert_address = $energov->prepare("insert into contact_address ($columns) values($params)");
+
+
+$select  = "select n.name_num   as legacy_id,
+                   n.name       as first_name,
+                   n.email      as email,
+                   n.phone_work as business_phone,
+                   n.phone_home as home_phone,
+                   'rentpro'    as legacy_data_source_name,
+                   1            as isactive,
+                   0            as is_company,
+                   0            as is_individual,
+                   n.address,
+                   n.city,
+                   n.state,
+                   n.zip
+            from rental.name n";
+$result  = $rental->query($select);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    $data = [
-        'first_name'              => $row['first_name'],
-        'email'                   => $row['email'],
-        'business_phone'          => $row['business_phone'],
-        'home_phone'              => $row['home_phone'],
-        'legacy_data_source_name' => $row['legacy_data_source_name'],
-        'isactive'                => $row['isactive'],
-        'is_company'              => $row['is_company'],
-        'is_individual'           => $row['is_individual'],
-        'legacy_id'               => $row['legacy_id']
-    ];
-    $insert->execute($data);
+    echo "$row[legacy_id]\n";
+    $data = [];
+    foreach ($contact_fields as $f) { $data[$f] = $row[$f]; }
+    $insert_contact->execute($data);
     $contact_id = $energov->lastInsertId();
 
     if ($row['address']) {
-        $address = MasterAddress::parseAddress($row['address']);
-        $data = [];
+        $a = MasterAddress::parseAddress($row['address']);
+        $data = [
+            'contact_id'        => $contact_id,
+            'street_number'     => MasterAddress::streetNumber($a),
+            'pre_direction'     => $a['direction'    ] ?? '',
+            'street_name'       => $a['street_name'  ] ?? '',
+            'street_type'       => $a['streetType'   ] ?? '',
+            'post_direction'    => $a['postDirection'] ?? '',
+            'unit_suite_number' => MasterAddress::subunit($a),
+            'country_type'      => 'unknown'
+        ];
+        print_r($data);
+        $insert_address->execute($data);
     }
 }
