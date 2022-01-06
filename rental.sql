@@ -76,6 +76,14 @@ select r.id              as permit_number,
 from rental.registr r
 join rental.prop_status s on r.property_status=s.status;
 
+-- permit_note
+select n.rental_id as legacy_id
+       n.notes     as note_text,
+       --          as note_title,
+       n.userid    as note_user,
+       n.note_date as note_date
+from rental.rental_notes n
+
 -- permit_address
 select r.id         as permit_number,
        case when subunit_id is not null then 1 else 0 end as main_address,
@@ -106,7 +114,8 @@ select r.id              as permit_number,
        'agent'           as contact_type,
        0                 as primary_billing_contact
 from rental.registr r
-join rental.name    n on r.agent=n.name_num;
+join rental.name    n on r.agent=n.name_num
+where r.agent>0;
 
 select id                as permit_number,
        name_num          as contact_id,
@@ -114,10 +123,15 @@ select id                as permit_number,
        1                 as primary_billing_contact
 from rental.regid_name;
 
--- permit_inspection
-select i.id              as permit_number,
-       i.insp_id         as inspection_number
-from rental.inspections i;
+-- permit_activity
+select h.rental_id       as legacy_id,
+       'Pull'            as activity_type,
+       h.id              as activity_number,
+       r.pull_text       as activity_comment,
+       h.username        as activity_user,
+       h.pull_date       as activity_date
+from rental.pull_history h
+join rental.pull_reas    r on h.pull_reason=r.p_reason;
 
 -- permit_fee
 select b.bid             as permit_fee_id,
@@ -175,10 +189,11 @@ select i.insp_id         as inspection_number,
        i.inspected_by    as inspector,
        i.inspection_date as inspected_date_start,
        i.inspection_date as inspected_date_end,
-       i.comments        as comment,
+       i.comments        as "comment",
        --                as inspection_case_number
 from rental.inspections i
 
-select i.insp_id         as inspection_number,
-from rental.inspections i
-join rental.registr     r on i.id=r.id
+-- permit_inspection
+select i.id              as permit_number,
+       i.insp_id         as inspection_number
+from rental.inspections i;

@@ -16,9 +16,10 @@ create table contact (
     title                   varchar(100),
     last_update_date        datetime,
     last_update_user        varchar(100),
-    legacy_data_source_name varchar(200),
     isactive                bit          not null,
-    legacy_id               int          not null
+    legacy_data_source_name varchar(200) not null,
+    legacy_id               int          not null,
+    unique (legacy_data_source_name, legacy_id)
 );
 
 create table contact_address (
@@ -47,7 +48,7 @@ create table contact_address (
 
 create table contact_note (
     contact_id int          not null,
-    note_text  varchar(200) not null,
+    note_text  varchar(500) not null,
     note_title varchar(100),
     note_user  varchar(100),
     note_date  date,
@@ -55,7 +56,7 @@ create table contact_note (
 );
 
 create table permit (
-    permit_number           int          not null primary key,
+    permit_number           int          not null primary key identity,
     permit_type             varchar(200),
     permit_sub_type         varchar(200),
     permit_status           varchar(200),
@@ -70,9 +71,11 @@ create table permit (
     last_inspection_date    date,
     valuation               money,
     square_footage          decimal (9),
-    legacy_data_source_name varchar(200),
     project_number          varchar(100),
-    assigned_to             varchar(200)
+    assigned_to             varchar(200),
+    legacy_data_source_name varchar(200) not null,
+    legacy_id               int          not null,
+    unique (legacy_data_source_name, legacy_id)
 );
 
 create table permit_contact (
@@ -106,4 +109,85 @@ create table permit_address (
     last_update_date  datetime,
     last_update_user  varchar(100),
     foreign key (permit_number) references permit(permit_number)
+);
+
+create table permit_note (
+    permit_number int not null,
+    note_text     varchar(510) not null,
+    note_title    varchar(100),
+    note_user     varchar(100),
+    note_date     datetime,
+    foreign key (permit_number) references permit(permit_number)
+);
+
+create table permit_activity (
+    activity_number  int          not null primary key identity,
+    permit_number    int          not null,
+    activity_type    varchar(100) not null,
+    activity_comment varchar(100),
+    activity_user    varchar(100),
+    activity_date    date,
+    foreign key (permit_number) references permit(permit_number)
+);
+
+create table inspection (
+    inspection_number	    int not null primary key identity,
+    inspection_type	        varchar(100),
+    inspection_status	    varchar(100),
+    create_date	            date,
+    requested_for_date	    date,
+    scheduled_for_date	    date,
+    attempt_number	        int,
+    completed	            bit,
+    last_update_date	    datetime,
+    last_update_user	    varchar(100),
+    inspector	            varchar(100),
+    inspected_date_start    date,
+    inspected_date_end      date,
+    comment                 varchar(500),
+    inspection_case_number	varchar(100),
+    legacy_data_source_name varchar(200) not null,
+    legacy_id               int          not null,
+    unique (legacy_data_source_name, legacy_id)
+);
+
+create table permit_inspection (
+    permit_number     int not null,
+    inspection_number int not null,
+    foreign key (permit_number    ) references permit(permit_number),
+    foreign key (inspection_number) references inspection(inspection_number)
+);
+
+create table permit_fee (
+    permit_fee_id           int         not null primary key identity,
+    permit_number           int         not null,
+    fee_type                varchar(100),
+    fee_amount              money       not null,
+    fee_date                date        not null,
+    created_by_user         varchar(100),
+    input_value             decimal,
+    fee_note                varchar(100),
+    legacy_data_source_name varchar(200) not null,
+    legacy_id               int          not null,
+    foreign key (permit_number) references permit(permit_number),
+    unique (legacy_data_source_name, legacy_id)
+);
+
+create table payment (
+    payment_id      int          not null primary key identity,
+    receipt_number  varchar(100) not null,
+    payment_method  varchar(100),
+    check_number    varchar(100),
+    payment_amount  money        not null,
+    payment_date    date         not null,
+    created_by_user varchar(100),
+    payment_note    varchar(100)
+);
+
+create table permit_payment_detail (
+    permit_fee_id int   not null,
+    payment_id    int   not null,
+    paid_amount   money not null,
+    foreign key (permit_fee_id) references permit_fee(permit_fee_id),
+    foreign key (   payment_id) references    payment(   payment_id)
 );

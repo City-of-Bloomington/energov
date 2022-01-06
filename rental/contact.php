@@ -29,6 +29,9 @@ $address_fields = [
     'street_type',
     'post_direction',
     'unit_suite_number',
+    'city',
+    'state_code',
+    'zip',
     'country_type'
 ];
 
@@ -44,17 +47,12 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $energov->prepare("insert into contact_address ($columns) values($params)");
 
-
-$select  = "select n.name_num   as legacy_id,
-                   n.name       as first_name,
-                   n.email      as email,
-                   n.phone_work as business_phone,
-                   n.phone_home as home_phone,
-                   'rentpro'    as legacy_data_source_name,
-                   1            as isactive,
-                   0            as is_company,
-                   0            as is_individual,
-                   n.notes      as note_text,
+$select  = "select n.name_num,
+                   n.name,
+                   n.email,
+                   n.phone_work,
+                   n.phone_home,
+                   n.notes,
                    n.address,
                    n.city,
                    n.state,
@@ -62,18 +60,27 @@ $select  = "select n.name_num   as legacy_id,
             from rental.name n";
 $result  = $rental->query($select);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "$row[legacy_id]\n";
-    $data = [];
-    foreach ($contact_fields as $f) { $data[$f] = $row[$f]; }
+    echo "Contact: $row[name_num] => ";
+    $data = [
+        'legacy_id'               => $row['name_num'  ],
+        'first_name'              => $row['name'      ],
+        'email'                   => $row['email'     ],
+        'business_phone'          => $row['phone_work'],
+        'home_phone'              => $row['phone_home'],
+        'isactive'                => 1,
+        'is_company'              => 0,
+        'is_individual'           => 0,
+        'legacy_data_source_name' => DATASOURCE_RENTAL,
+    ];
     $insert_contact->execute($data);
     $contact_id = $energov->lastInsertId();
+    echo "$contact_id\n";
 
-    if ($row['note_text']) {
+    if ($row['notes']) {
         $data = [
             'contact_id' => $contact_id,
-            'note_text'  => $row['note_text']
+            'note_text'  => $row['notes']
         ];
-        print_r($data);
         $insert_note->execute($data);
     }
 
@@ -87,6 +94,9 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             'street_type'       => $a['streetType'   ] ?? '',
             'post_direction'    => $a['postDirection'] ?? '',
             'unit_suite_number' => MasterAddress::subunit($a),
+            'city'              => $row['city' ],
+            'state_code'        => $row['state'],
+            'zip'               => $row['zip'  ],
             'country_type'      => 'unknown'
         ];
         $insert_address->execute($data);

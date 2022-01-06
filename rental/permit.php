@@ -6,39 +6,44 @@
  * @param $energov  PDO connection to DCT database
  */
 declare (strict_types=1);
-$sql = "insert into permit(
-             permit_number,
-             permit_type,
-             permit_sub_type,
-             permit_status,
-             apply_date,
-             issue_date,
-             expire_date,
-             legacy_data_source_name
-         )
-         values(
-             :permit_number,
-             :permit_type,
-             :permit_sub_type,
-             :permit_status,
-             :apply_date,
-             :issue_date,
-             :expire_date,
-             :legacy_data_source_name
-         )";
-$insert = $energov->prepare($sql);
+$fields = [
+    'legacy_id',
+    'permit_type',
+    'permit_sub_type',
+    'permit_status',
+    'apply_date',
+    'issue_date',
+    'expire_date',
+    'legacy_data_source_name'
+];
 
-$sql = "select r.id           as permit_number,
-            'rental'          as permit_type,
-            s.status_text     as permit_sub_type,
-            case when r.inactive='Y' then 'inactive' else 'active' end as permit_status,
-            r.registered_date as apply_date,
-            r.permit_issued   as issue_date,
-            r.permit_expires  as expire_date,
-            'rentpro'         as legacy_data_source_name
+$columns = implode(',', $fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $fields));
+$insert  = $energov->prepare("insert into permit ($columns) values($params)");
+
+$sql = "select r.id,
+               s.status_text,
+               r.inactive,
+               r.registered_date,
+               r.permit_issued,
+               r.permit_expires
         from rental.registr r
         join rental.prop_status s on r.property_status=s.status";
 $result = $rental->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    $insert->execute($row);
+    echo "Permit: $row[id] => ";
+
+    $data = [
+        'legacy_id'               => $row['id'],
+        'permit_type'             => 'rental',
+        'permit_sub_type'         => $row['status_text'],
+        'permit_status'           => $row['inactive'] ? 'inactive' : 'active',
+        'apply_date'              => $row['registered_date'],
+        'issue_date'              => $row['permit_issued'  ],
+        'expire_date'             => $row['permit_expires' ],
+        'legacy_data_source_name' => DATASOURCE_RENTAL,
+    ];
+    $insert->execute($data);
+    $permit_number = $energov->lastInsertId();
+    echo "$permit_number\n";
 }

@@ -1,5 +1,5 @@
 ---
-- hosts: 'energov'
+- hosts: 'all'
   become: "yes"
   roles:
     - "City-of-Bloomington.php"
