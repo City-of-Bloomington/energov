@@ -164,14 +164,27 @@ select
     p.rec_date           as payment_date,
     --                   as created_by_user,
     --                   as payment_note
-from rental.reg_paid p
+from rental.reg_paid  p
+where p.rec_date is not null;
 
 -- permit_payment_detail
-select b.bid             as permit_fee_id,
-       --                as permit_payment_id,
+select p.bid             as legacy_id,
+       p.rec_sum         as paid_amount
+from rental.reg_paid  p
+join rental.reg_bills b on p.bid=b.bid;
 
-from rental.reg_bills b
-join rental.reg_paid  p on b.bid=p.bid
+-- permit attachments
+select i.rid             as parent_case_number,
+       'permit'          as permit_case_table,
+       --                as file_path,
+       i.image_file      as file_name,
+       --                as doc_comment,
+       i.image_date      as doc_date,
+       --                as attached_by,
+       --                as attachment_group,
+                         as document_data
+       --                as tcmdocid
+from rental.rental_images i;
 
 -- ------------------------
 -- Inspections

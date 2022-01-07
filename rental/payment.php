@@ -33,12 +33,11 @@ $sql = "select bid,
                check_no,
                rec_sum,
                rec_date
-        from rental.reg_paid";
-$result = $rental->query($sql):
+        from rental.reg_paid
+        where rec_date is not null";
+$result = $rental->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     echo "Payment: $row[bid] => ";
-    $fee->execute([$row['bid'], DATASOURCE_RENTAL]);
-    $permit_fee_id = $fee->fetchColumn();
 
     $insert_payment->execute([
         'receipt_number' => $row['receipt_no'],
@@ -49,11 +48,14 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     ]);
     $payment_id = $energov->lastInsertId();
 
-    $insert_details->execute([
-        'permit_fee_id' => $permit_fee_id,
-        'payment_id'    => $payment_id,
-        'paid_amount'   => $row['rec_sum']
-    ]);
-
+    $fee->execute([$row['bid'], DATASOURCE_RENTAL]);
+    $permit_fee_id = $fee->fetchColumn();
+    if ($permit_fee_id) {
+        $insert_details->execute([
+            'permit_fee_id' => $permit_fee_id,
+            'payment_id'    => $payment_id,
+            'paid_amount'   => $row['rec_sum']
+        ]);
+    }
     echo "$payment_id\n";
 }

@@ -23,7 +23,10 @@ $sql    = "select * from rental.reg_bills";
 $result = $rental->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     echo "Permt Fee: $row[bid] => ";
-    $permit->execute([$row['bid'], DATASOURCE_RENTAL]);
+    $permit->execute([$row['id'], DATASOURCE_RENTAL]);
+    $permit_number = $permit->fetchColumn();
+    echo "$permit_number => ";
+
     $fee_amount = (((int)$row[    'bul_rate'] * (int)$row[    'bul_cnt'])
                  + ((int)$row[   'unit_rate'] * (int)$row[   'unit_cnt'])
                  + ((int)$row[   'bath_rate'] * (int)$row[   'bath_cnt'])

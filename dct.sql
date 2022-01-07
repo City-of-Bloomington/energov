@@ -88,7 +88,7 @@ create table permit_contact (
 );
 
 create table permit_address (
-    permit_number int not null,
+    permit_number     int not null,
     main_address      bit,
     address_type      varchar(100),
     street_number     varchar(400),
@@ -163,7 +163,7 @@ create table permit_fee (
     permit_number           int         not null,
     fee_type                varchar(100),
     fee_amount              money       not null,
-    fee_date                date        not null,
+    fee_date                date,
     created_by_user         varchar(100),
     input_value             decimal,
     fee_note                varchar(100),
@@ -190,4 +190,18 @@ create table permit_payment_detail (
     paid_amount   money not null,
     foreign key (permit_fee_id) references permit_fee(permit_fee_id),
     foreign key (   payment_id) references    payment(   payment_id)
+);
+
+create table attachment_document (
+    doc_id             int not null primary key identity,
+    parent_case_number int not null,
+    parent_case_table  varchar(100) not null,
+    file_path          varchar(400),
+    file_name          varchar(100) not null,
+    doc_comment        varchar(100),
+    doc_date           datetime,
+    attached_by        varchar(100),
+    attachment_group   varchar(100),
+    document_data      varbinary(max),
+    tcmdocid           varchar(510)
 );

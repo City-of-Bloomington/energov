@@ -25,11 +25,13 @@ $sql = "select h.rental_id,
                h.username,
                h.pull_date
         from rental.pull_history h
-        join rental.pull_reas    r";
+        join rental.pull_reas    r on h.pull_reason=r.p_reason";
 $result = $rental->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+    echo "Permit Activity: $row[rental_id] => ";
     $permit->execute([$row['rental_id'], DATASOURCE_RENTAL]);
     $permit_number = $permit ->fetchColumn();
+    echo "$permit_number\n";
 
     $insert->execute([
         'permit_number'    => $permit_number,

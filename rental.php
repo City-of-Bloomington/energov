@@ -16,9 +16,12 @@ $config  = include SITE_HOME.'/config.php';
 $rental  = db_connect($config['db']['rental' ]);
 $energov = db_connect($config['db']['energov']);
 
+$energov->query('delete from attachment_document');
+$energov->query('delete from permit_payment_detail');
+$energov->query('delete from payment');
+$energov->query('delete from permit_fee');
 $energov->query('delete from permit_activity');
 $energov->query('delete from permit_note');
-$energov->query('delete from permit_fee');
 $energov->query('delete from permit_inspection');
 $energov->query('delete from permit_contact');
 $energov->query('delete from permit_address');
@@ -29,11 +32,13 @@ $energov->query('delete from contact_address');
 $energov->query('delete from contact_note');
 $energov->query('delete from contact');
 
-$energov->query("dbcc checkident('contact',         RESEED, 0)");
-$energov->query("dbcc checkident('inspection',      RESEED, 0)");
-$energov->query("dbcc checkident('permit',          RESEED, 0)");
-$energov->query("dbcc checkident('permit_fee',      RESEED, 0)");
-$energov->query("dbcc checkident('permit_activity', RESEED, 0)");
+$energov->query("dbcc checkident('contact',             RESEED, 0)");
+$energov->query("dbcc checkident('inspection',          RESEED, 0)");
+$energov->query("dbcc checkident('permit',              RESEED, 0)");
+$energov->query("dbcc checkident('permit_activity',     RESEED, 0)");
+$energov->query("dbcc checkident('permit_fee',          RESEED, 0)");
+$energov->query("dbcc checkident('payment',             RESEED, 0)");
+$energov->query("dbcc checkident('attachment_document', RESEED, 0)");
 
 include './rental/contact.php';
 include './rental/inspection.php';
@@ -41,9 +46,11 @@ include './rental/permit.php';
 include './rental/permit_address.php';
 include './rental/permit_contact.php';
 include './rental/permit_inspection.php';
-include './rental/permit_fee.php';
 include './rental/permit_note.php';
 include './rental/permit_activity.php';
+include './rental/permit_fee.php';
+include './rental/payment.php';
+include './rental/attachment_document.php';
 
 function db_connect(array $config): \PDO
 {
