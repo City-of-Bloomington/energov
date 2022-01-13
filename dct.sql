@@ -56,7 +56,7 @@ create table contact_note (
 );
 
 create table permit (
-    permit_number           int          not null primary key identity,
+    permit_number           varchar(100) not null primary key,
     permit_type             varchar(200),
     permit_sub_type         varchar(200),
     permit_status           varchar(200),
@@ -79,8 +79,8 @@ create table permit (
 );
 
 create table permit_contact (
-    permit_number   int not null,
-    contact_id      int not null,
+    permit_number   varchar(100) not null,
+    contact_id      int          not null,
     contact_type    varchar(32),
     primary_billing_contact bit,
     foreign key (permit_number) references permit (permit_number),
@@ -88,7 +88,7 @@ create table permit_contact (
 );
 
 create table permit_address (
-    permit_number     int not null,
+    permit_number     varchar(100) not null,
     main_address      bit,
     address_type      varchar(100),
     street_number     varchar(400),
@@ -112,7 +112,7 @@ create table permit_address (
 );
 
 create table permit_note (
-    permit_number int not null,
+    permit_number varchar(100) not null,
     note_text     varchar(510) not null,
     note_title    varchar(100),
     note_user     varchar(100),
@@ -122,7 +122,7 @@ create table permit_note (
 
 create table permit_activity (
     activity_number  int          not null primary key identity,
-    permit_number    int          not null,
+    permit_number    varchar(100) not null,
     activity_type    varchar(100) not null,
     activity_comment varchar(100),
     activity_user    varchar(100),
@@ -131,7 +131,7 @@ create table permit_activity (
 );
 
 create table inspection (
-    inspection_number	    int not null primary key identity,
+    inspection_number	    varchar(100) not null primary key,
     inspection_type	        varchar(100),
     inspection_status	    varchar(100),
     create_date	            date,
@@ -152,17 +152,17 @@ create table inspection (
 );
 
 create table permit_inspection (
-    permit_number     int not null,
-    inspection_number int not null,
+    permit_number     varchar(100) not null,
+    inspection_number varchar(100) not null,
     foreign key (permit_number    ) references permit(permit_number),
     foreign key (inspection_number) references inspection(inspection_number)
 );
 
 create table permit_fee (
-    permit_fee_id           int         not null primary key identity,
-    permit_number           int         not null,
+    permit_fee_id           int          not null primary key identity,
+    permit_number           varchar(100) not null,
     fee_type                varchar(100),
-    fee_amount              money       not null,
+    fee_amount              money        not null,
     fee_date                date,
     created_by_user         varchar(100),
     input_value             decimal,
@@ -193,8 +193,8 @@ create table permit_payment_detail (
 );
 
 create table attachment_document (
-    doc_id             int not null primary key identity,
-    parent_case_number int not null,
+    doc_id             int          not null primary key identity,
+    parent_case_number varchar(100) not null,
     parent_case_table  varchar(100) not null,
     file_path          varchar(400),
     file_name          varchar(100) not null,

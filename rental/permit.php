@@ -7,6 +7,7 @@
  */
 declare (strict_types=1);
 $fields = [
+    'permit_number',
     'legacy_id',
     'permit_type',
     'permit_sub_type',
@@ -29,11 +30,17 @@ $sql = "select r.id,
                r.permit_expires
         from rental.registr r
         join rental.prop_status s on r.property_status=s.status";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permit: $row[id] => ";
+$query  = $RENTAL->query($sql);
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit: $percent% $row[id]";
 
-    $data = [
+    $insert->execute([
+        'permit_number'           => "rental_$row[id]",
         'legacy_id'               => $row['id'],
         'permit_type'             => 'rental',
         'permit_sub_type'         => $row['status_text'],
@@ -42,8 +49,6 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'issue_date'              => $row['permit_issued'  ],
         'expire_date'             => $row['permit_expires' ],
         'legacy_data_source_name' => DATASOURCE_RENTAL,
-    ];
-    $insert->execute($data);
-    $permit_number = $DCT->lastInsertId();
-    echo "$permit_number\n";
+    ]);
 }
+echo "\n";

@@ -58,10 +58,16 @@ $select  = "select n.name_num,
                    n.state,
                    n.zip
             from rental.name n";
-$result  = $RENTAL->query($select);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Contact: $row[name_num] => ";
-    $data = [
+$query   = $RENTAL->query($select);
+$result  = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total   = count($result);
+$c       = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/contact: $percent% $row[name_num] => ";
+
+    $insert_contact->execute([
         'legacy_id'               => $row['name_num'  ],
         'first_name'              => $row['name'      ],
         'email'                   => $row['email'     ],
@@ -71,17 +77,15 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'is_company'              => 0,
         'is_individual'           => 0,
         'legacy_data_source_name' => DATASOURCE_RENTAL,
-    ];
-    $insert_contact->execute($data);
+    ]);
     $contact_id = $DCT->lastInsertId();
-    echo "$contact_id\n";
+    echo "$contact_id";
 
     if ($row['notes']) {
-        $data = [
+        $insert_note->execute([
             'contact_id' => $contact_id,
             'note_text'  => $row['notes']
-        ];
-        $insert_note->execute($data);
+        ]);
     }
 
     if ($row['address']) {
@@ -102,3 +106,4 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         $insert_address->execute($data);
     }
 }
+echo "\n";

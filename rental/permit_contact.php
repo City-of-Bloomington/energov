@@ -16,62 +16,60 @@ $fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert permit_contact ($columns) values($params)");
+$contact = $DCT->prepare("select contact_id from contact where legacy_id=? and legacy_data_source_name=?");
 
-$contact = $DCT->prepare("select contact_id    from contact where legacy_id=? and legacy_data_source_name=?");
-$permit  = $DCT->prepare('select permit_number from permit  where legacy_id=? and legacy_data_source_name=?');
+$query   = $RENTAL->query("select id, agent from rental.registr where agent>0");
+$result  = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total   = count($result);
+$c       = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit_contact agent: $percent% $row[id]";
 
-$sql     = "select r.id,
-                   r.agent
-            from rental.registr r
-            where r.agent>0";
-$result  = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permit Agent: $row[id]\n";
-    $permit ->execute([$row['id'   ], DATASOURCE_RENTAL]);
     $contact->execute([$row['agent'], DATASOURCE_RENTAL]);
-    $permit_number = $permit ->fetchColumn();
-    $contact_id    = $contact->fetchColumn();
+    $contact_id = $contact->fetchColumn();
 
-    if ($permit_number && $contact_id) {
-        $data = [
-            'permit_number' => $permit_number,
+    if ($contact_id) {
+        $insert->execute([
+            'permit_number' => "rental_$row[id]",
             'contact_id'    => $contact_id,
             'contact_type'  => 'agent',
             'primary_billing_contact' => 0
-        ];
-        $insert->execute($data);
+        ]);
     }
     else {
         print_r($row);
-        echo "permit_number: $permit_number contact_id: $contact_id";
+        echo "contact_id: $contact_id";
         exit();
     }
 }
+echo "\n";
 
+$query  = $RENTAL->query("select id, name_num from rental.regid_name");
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit_contact owner: $percent% $row[id]";
 
-$sql = "select id,
-               name_num
-        from rental.regid_name";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permit Owner: $row[id]";
-    $permit ->execute([$row['id'      ], DATASOURCE_RENTAL]);
     $contact->execute([$row['name_num'], DATASOURCE_RENTAL]);
-    $permit_number = $permit ->fetchColumn();
-    $contact_id    = $contact->fetchColumn();
+    $contact_id = $contact->fetchColumn();
 
-    if ($permit_number && $contact_id) {
-        $data = [
-            'permit_number' => $permit_number,
+    if ($contact_id) {
+        $insert->execute([
+            'permit_number' => "rental_$row[id]",
             'contact_id'    => $contact_id,
             'contact_type'  => 'owner',
             'primary_billing_contact' => 1
-        ];
-        $insert->execute($data);
+        ]);
     }
     else {
         print_r($row);
-        echo "permit_number: $permit_number contact_id: $contact_id";
+        echo "contact_id: $contact_id";
         exit();
     }
 }
+echo "\n";

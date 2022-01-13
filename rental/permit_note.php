@@ -15,23 +15,21 @@ $fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit_note ($columns) values($params)");
-$permit  = $DCT->prepare('select permit_number from permit where legacy_id=? and legacy_data_source_name=?');
 
-$sql = "select rental_id,
-               notes,
-               userid,
-               note_date
-        from rental.rental_notes";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permit Note: $row[rental_id]\n";
-    $permit->execute([$row['rental_id'], DATASOURCE_RENTAL]);
-    $permit_number = $permit ->fetchColumn();
+$query   = $RENTAL->query("select * from rental.rental_notes");
+$result  = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total   = count($result);
+$c       = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit_note: $percent% $row[rental_id]";
 
     $insert->execute([
-        'permit_number' => $permit_number,
+        'permit_number' => "rental_$row[rental_id]",
         'note_text'     => $row['notes'    ],
         'note_user'     => $row['userid'   ],
         'note_date'     => $row['note_date']
     ]);
 }
+echo "\n";

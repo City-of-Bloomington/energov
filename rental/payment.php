@@ -37,9 +37,14 @@ $sql = "select bid,
                rec_date
         from rental.reg_paid
         where rec_date is not null";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Payment: $row[bid] => ";
+$query  = $RENTAL->query($sql);
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/payment: $percent% $row[bid] => ";
 
     $insert_payment->execute([
         'receipt_number' => $row['receipt_no'],
@@ -49,6 +54,7 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'payment_date'   => $row['rec_date'  ]
     ]);
     $payment_id = $DCT->lastInsertId();
+    echo "$payment_id";
 
     $fee->execute([$row['bid'], DATASOURCE_RENTAL]);
     $permit_fee_id = $fee->fetchColumn();
@@ -59,5 +65,5 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             'paid_amount'   => $row['rec_sum']
         ]);
     }
-    echo "$payment_id\n";
 }
+echo "\n";

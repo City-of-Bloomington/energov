@@ -18,7 +18,6 @@ $fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit_activity ($columns) values($params)");
-$permit  = $DCT->prepare('select permit_number from permit where legacy_id=? and legacy_data_source_name=?');
 
 $sql = "select h.rental_id,
                r.pull_text,
@@ -26,18 +25,21 @@ $sql = "select h.rental_id,
                h.pull_date
         from rental.pull_history h
         join rental.pull_reas    r on h.pull_reason=r.p_reason";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permit Activity: $row[rental_id] => ";
-    $permit->execute([$row['rental_id'], DATASOURCE_RENTAL]);
-    $permit_number = $permit ->fetchColumn();
-    echo "$permit_number\n";
+$query  = $RENTAL->query($sql);
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit_activity: $percent% $row[rental_id]";
 
     $insert->execute([
-        'permit_number'    => $permit_number,
+        'permit_number'    => "rental_$row[rental_id]",
         'activity_type'    => 'Pull',
         'activity_comment' => $row['pull_text'],
         'activity_user'    => $row['username' ],
         'activity_date'    => $row['pull_date']
     ]);
 }
+echo "\n";

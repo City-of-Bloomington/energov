@@ -20,7 +20,6 @@ $fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert permit_address ($columns) values($params)");
-$permit  = $DCT->prepare('select permit_number from permit where legacy_id=? and legacy_data_source_name=?');
 
 $sql = "select r.id,
                a.street_num,
@@ -33,29 +32,25 @@ $sql = "select r.id,
                a.sud_num
         from rental.registr  r
         join rental.address2 a on r.id=a.registr_id";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permit Address: $row[id] => ";
-    $permit->execute([$row['id'], DATASOURCE_RENTAL]);
-    $permit_number = $permit->fetchColumn();
-
-    if ($permit_number) {
-        echo "$permit_number | $row[street_num] $row[street_dir] $row[street_name] $row[street_type] $row[sud_type] $row[sud_num]\n";
-        $data = [
-            'permit_number'     => $permit_number,
-            'main_address'      => $row['subunit_id' ] ? 0 : 1,
-            'street_number'     => $row['street_num' ],
-            'pre_direction'     => $row['street_dir' ],
-            'street_name'       => $row['street_name'],
-            'street_type'       => $row['street_type'],
-            'post_direction'    => $row['post_dir'   ],
-            'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
-            'country_type'      => 'unknown',
-        ];
-        $insert->execute($data);
-    }
-    else {
-        echo "Could not find permit for $row[id]\n";
-        exit();
-    }
+$query  = $RENTAL->query($sql);
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit_address: $percent% $row[id] => ";
+    echo "$row[street_num] $row[street_dir] $row[street_name] $row[street_type] $row[sud_type] $row[sud_num]";
+    $insert->execute([
+        'permit_number'     => "rental_$row[id]",
+        'main_address'      => $row['subunit_id' ] ? 0 : 1,
+        'street_number'     => $row['street_num' ],
+        'pre_direction'     => $row['street_dir' ],
+        'street_name'       => $row['street_name'],
+        'street_type'       => $row['street_type'],
+        'post_direction'    => $row['post_dir'   ],
+        'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+        'country_type'      => 'earth',
+    ]);
 }
+echo "\n";

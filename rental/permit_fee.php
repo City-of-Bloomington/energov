@@ -17,15 +17,15 @@ $fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit_fee ($columns) values($params)");
-$permit  = $DCT->prepare('select permit_number from permit  where legacy_id=? and legacy_data_source_name=?');
 
-$sql    = "select * from rental.reg_bills";
-$result = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Permt Fee: $row[bid] => ";
-    $permit->execute([$row['id'], DATASOURCE_RENTAL]);
-    $permit_number = $permit->fetchColumn();
-    echo "$permit_number => ";
+$query   = $RENTAL->query("select * from rental.reg_bills");
+$result  = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total   = count($result);
+$c       = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/permit_fee: $percent% $row[bid] => ";
 
     $fee_amount = (((int)$row[    'bul_rate'] * (int)$row[    'bul_cnt'])
                  + ((int)$row[   'unit_rate'] * (int)$row[   'unit_cnt'])
@@ -39,7 +39,7 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
                  +  (int)$row['other_fee2']
                  -  (int)$row['credit']);
     $data = [
-        'permit_number'           => $permit_number,
+        'permit_number'           => "rental_$row[id]",
         'fee_amount'              => $fee_amount,
         'fee_date'                => $row['issue_date'],
         'legacy_data_source_name' => DATASOURCE_RENTAL,
@@ -47,5 +47,6 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     ];
     $insert->execute($data);
     $permit_fee_id = $DCT->lastInsertId();
-    echo "$permit_fee_id\n";
+    echo "$permit_fee_id";
 }
+echo "\n";

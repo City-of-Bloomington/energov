@@ -7,6 +7,7 @@
  */
 declare (strict_types=1);
 $fields = [
+    'inspection_number',
     'inspection_type',
     'inspection_status',
     'completed',
@@ -29,11 +30,17 @@ $sql     = "select insp_id,
                    inspection_date,
                    comments
             from rental.inspections";
-$result  = $RENTAL->query($sql);
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    echo "Inspection: $row[insp_id] => ";
+$query   = $RENTAL->query($sql);
+$result  = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total   = count($result);
+$c       = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrental/inspection: $percent% $row[insp_id]";
 
-    $data = [
+    $insert->execute([
+        'inspection_number'    => "rental_$row[insp_id]",
         'legacy_id'            => $row['insp_id'        ],
         'inspection_type'      => $row['inspection_type'],
         'inspection_status'    => $row['time_status'    ],
@@ -43,9 +50,6 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'inspected_date_end'   => $row['inspection_date'],
         'comment'              => $row['comments'       ],
         'legacy_data_source_name' => DATASOURCE_RENTAL
-    ];
-
-    $insert->execute($data);
-    $inspection_number = $DCT->lastInsertId();
-    echo "$inspection_number\n";
+    ]);
 }
+echo "\n";
