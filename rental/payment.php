@@ -2,6 +2,8 @@
 /**
  * @copyright 2022 City of Bloomington, Indiana
  * @license https://www.gnu.org/licenses/agpl.txt GNU/AGPL, see LICENSE
+ * @param $RENTAL PDO connection to rental database
+ * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
 $payment_fields = [
@@ -19,13 +21,13 @@ $detail_fields = [
 
 $columns = implode(',', $payment_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $payment_fields));
-$insert_payment = $energov->prepare("insert into payment ($columns) values($params)");
+$insert_payment = $DCT->prepare("insert into payment ($columns) values($params)");
 
 $columns = implode(',', $detail_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $detail_fields));
-$insert_details = $energov->prepare("insert into permit_payment_detail ($columns) values($params)");
+$insert_details = $DCT->prepare("insert into permit_payment_detail ($columns) values($params)");
 
-$fee = $energov->prepare('select permit_fee_id from permit_fee where legacy_id=? and legacy_data_source_name=?');
+$fee = $DCT->prepare('select permit_fee_id from permit_fee where legacy_id=? and legacy_data_source_name=?');
 
 $sql = "select bid,
                receipt_no,
@@ -35,7 +37,7 @@ $sql = "select bid,
                rec_date
         from rental.reg_paid
         where rec_date is not null";
-$result = $rental->query($sql);
+$result = $RENTAL->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     echo "Payment: $row[bid] => ";
 
@@ -46,7 +48,7 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'payment_amount' => $row['rec_sum'   ],
         'payment_date'   => $row['rec_date'  ]
     ]);
-    $payment_id = $energov->lastInsertId();
+    $payment_id = $DCT->lastInsertId();
 
     $fee->execute([$row['bid'], DATASOURCE_RENTAL]);
     $permit_fee_id = $fee->fetchColumn();

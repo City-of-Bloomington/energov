@@ -2,8 +2,8 @@
 /**
  * @copyright 2022 City of Bloomington, Indiana
  * @license https://www.gnu.org/licenses/agpl.txt GNU/AGPL, see LICENSE
- * @param $rental   PDO connection to rental database
- * @param $energov  PDO connection to DCT database
+ * @param $RENTAL PDO connection to rental database
+ * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
 $fields = [
@@ -19,7 +19,7 @@ $fields = [
 
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
-$insert  = $energov->prepare("insert into permit ($columns) values($params)");
+$insert  = $DCT->prepare("insert into permit ($columns) values($params)");
 
 $sql = "select r.id,
                s.status_text,
@@ -29,7 +29,7 @@ $sql = "select r.id,
                r.permit_expires
         from rental.registr r
         join rental.prop_status s on r.property_status=s.status";
-$result = $rental->query($sql);
+$result = $RENTAL->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     echo "Permit: $row[id] => ";
 
@@ -44,6 +44,6 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ];
     $insert->execute($data);
-    $permit_number = $energov->lastInsertId();
+    $permit_number = $DCT->lastInsertId();
     echo "$permit_number\n";
 }

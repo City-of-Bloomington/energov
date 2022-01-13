@@ -2,8 +2,8 @@
 /**
  * @copyright 2022 City of Bloomington, Indiana
  * @license https://www.gnu.org/licenses/agpl.txt GNU/AGPL, see LICENSE
- * @param $rental   PDO connection to rental database
- * @param $energov  PDO connection to DCT database
+ * @param $RENTAL PDO connection to rental database
+ * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
 $fields = [
@@ -20,7 +20,7 @@ $fields = [
 
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
-$insert  = $energov->prepare("insert into inspection ($columns) values($params)");
+$insert  = $DCT->prepare("insert into inspection ($columns) values($params)");
 
 $sql     = "select insp_id,
                    inspection_type,
@@ -29,7 +29,7 @@ $sql     = "select insp_id,
                    inspection_date,
                    comments
             from rental.inspections";
-$result  = $rental->query($sql);
+$result  = $RENTAL->query($sql);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     echo "Inspection: $row[insp_id] => ";
 
@@ -46,6 +46,6 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     ];
 
     $insert->execute($data);
-    $inspection_number = $energov->lastInsertId();
+    $inspection_number = $DCT->lastInsertId();
     echo "$inspection_number\n";
 }

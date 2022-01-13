@@ -2,8 +2,8 @@
 /**
  * @copyright 2022 City of Bloomington, Indiana
  * @license https://www.gnu.org/licenses/agpl.txt GNU/AGPL, see LICENSE
- * @param $rental   PDO connection to rental database
- * @param $energov  PDO connection to DCT database
+ * @param $RENTAL PDO connection to rental database
+ * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
 $contact_fields = [
@@ -37,15 +37,15 @@ $address_fields = [
 
 $columns = implode(',', $contact_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
-$insert_contact  = $energov->prepare("insert into contact ($columns) values($params)");
+$insert_contact  = $DCT->prepare("insert into contact ($columns) values($params)");
 
 $columns = implode(',', $note_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $note_fields));
-$insert_note     = $energov->prepare("insert into contact_note ($columns) values($params)");
+$insert_note     = $DCT->prepare("insert into contact_note ($columns) values($params)");
 
 $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
-$insert_address = $energov->prepare("insert into contact_address ($columns) values($params)");
+$insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
 $select  = "select n.name_num,
                    n.name,
@@ -58,7 +58,7 @@ $select  = "select n.name_num,
                    n.state,
                    n.zip
             from rental.name n";
-$result  = $rental->query($select);
+$result  = $RENTAL->query($select);
 foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     echo "Contact: $row[name_num] => ";
     $data = [
@@ -73,7 +73,7 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ];
     $insert_contact->execute($data);
-    $contact_id = $energov->lastInsertId();
+    $contact_id = $DCT->lastInsertId();
     echo "$contact_id\n";
 
     if ($row['notes']) {
