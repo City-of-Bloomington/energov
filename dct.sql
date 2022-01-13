@@ -10,7 +10,7 @@ create table contact (
     website                 varchar(200),
     business_phone          varchar(100),
     home_phone              varchar(100),
-    mobile_phon             varchar(100),
+    mobile_phone            varchar(100),
     other_phone             varchar(100),
     fax                     varchar(100),
     title                   varchar(100),
