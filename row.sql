@@ -163,3 +163,42 @@ select n.id         as contact_id,
        'bond_compnaies'    as legacy_data_source_name,
        --           as isactive
 from row.bond_companies n;
+
+--------------------------------
+-- bond
+--------------------------------
+select b.id              as bond_id,
+       b.bond_num        as bond_number,
+       b.`type`          as bond_type,
+       case when b.expire_date<now() then 'expired' else 'not expired yet' end as bond_status,
+       --                as issue_date,
+       b.expire_date     as expire_date,
+       --                as release_date,
+       b.amount          as amount,
+       --                as global_entity_account_number,
+       c.company_id      as obligee_contact_id,
+       c.contact_id      as principal_contact_id,
+       b.bond_company_id as surety_contact_id
+from row.bonds b
+left join company_contacts c on b.company_contact_id=c.id;
+
+--------------------------------
+-- permit
+--------------------------------
+select r.id              as permit_number,
+       'rental'          as permit_type,
+       s.status_text     as permit_sub_type,
+       case when r.inactive is null then 'active' else 'inactive' end as permit_status,
+       --                as district,
+       r.registered_date as apply_date,
+       --                as permit_description,
+       r.permit_issued   as issue_date,
+       r.permit_expires  as expire_date,
+       --                as last_update_date,
+       --                as last_inspection_date,
+       --                as valuation,
+       --                as square_footage,
+       'rentpro'         as legacy_data_source_name
+       --                as project_number,
+       --                as assigned_to
+from row.excavpermits

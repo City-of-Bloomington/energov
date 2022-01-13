@@ -205,3 +205,30 @@ create table attachment_document (
     document_data      varbinary(max),
     tcmdocid           varchar(510)
 );
+
+create table bond (
+    bond_id               int          not null primary key,
+    bond_number           varchar(100) not null unique,
+    bond_type             varchar(100) not null,
+    bond_status           varchar(100) not null,
+    issue_date            date,
+    expire_date           date,
+    release_date          date,
+    amount                money        not null,
+    obligee_contact_id    int          not null,
+    principal_contact_id  int          not null,
+    surety_contact_id     int          not null,
+    global_entity_account_number varchar(100),
+    foreign key (  obligee_contact_id) references contact(contact_id),
+    foreign key (principal_contact_id) references contact(contact_id),
+    foreign key (   surety_contact_id) references contact(contact_id)
+);
+
+create table bond_note (
+    bond_id    int          not null,
+    note_text  varchar(500) not null,
+    note_title varchar(100),
+    note_user  varchar(100),
+    note_date  date,
+    foreign key (bond_id) references bond(bond_id)
+);

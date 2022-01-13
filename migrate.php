@@ -17,6 +17,8 @@ $RENTAL  = db_connect($config['db']['rental' ]);
 $ROW     = db_connect($config['db']['row'    ]);
 $DCT     = db_connect($config['db']['energov']);
 
+$DCT->query('delete from bond_note');
+$DCT->query('delete from bond');
 $DCT->query('delete from attachment_document');
 $DCT->query('delete from permit_payment_detail');
 $DCT->query('delete from payment');
@@ -34,8 +36,6 @@ $DCT->query('delete from contact_note');
 $DCT->query('delete from contact');
 
 $DCT->query("dbcc checkident('contact',             RESEED, 0)");
-$DCT->query("dbcc checkident('inspection',          RESEED, 0)");
-$DCT->query("dbcc checkident('permit',              RESEED, 0)");
 $DCT->query("dbcc checkident('permit_activity',     RESEED, 0)");
 $DCT->query("dbcc checkident('permit_fee',          RESEED, 0)");
 $DCT->query("dbcc checkident('payment',             RESEED, 0)");
@@ -53,7 +53,9 @@ include './rental/permit_fee.php';
 include './rental/payment.php';
 include './rental/attachment_document.php';
 
+
 include './row/contact.php';
+include './row/bond.php';
 
 function db_connect(array $config): \PDO
 {

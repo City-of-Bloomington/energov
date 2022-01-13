@@ -50,10 +50,11 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$result = $ROW->query('select * from companies');
-$total  = $result->rowCount();
+$query  = $ROW->query('select * from companies');
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
 $c      = 0;
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrow/contact companies: $percent% $row[id] => ";
@@ -101,10 +102,11 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
 }
 echo "\n";
 
-$result = $ROW->query('select * from contacts');
-$total  = $result->rowCount();
+$query  = $ROW->query('select * from contacts');
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
 $c      = 0;
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrow/contact contacts: $percent% $row[id] => ";
@@ -153,10 +155,11 @@ foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
 }
 echo "\n";
 
-$result = $ROW->query('select * from bond_companies');
-$total  = $result->rowCount();
+$query  = $ROW->query('select * from bond_companies');
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
 $c      = 0;
-foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrow/contact bond_companies: $percent% $row[id] => ";
