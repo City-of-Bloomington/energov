@@ -40,11 +40,12 @@ $sql    = "select b.id,
                   b.amount,
                   c.company_id,
                   c.contact_id,
-                  b.bond_company_id,
+                  bc.id as bond_company_id,
                   b.notes,
                   b.description
            from row.bonds b
-           left join company_contacts c on b.company_contact_id=c.id
+           left join bond_companies  bc on bc.id=b.bond_company_id
+           left join company_contacts c on  c.id=b.company_contact_id
            where bond_num        is not null
              and bond_company_id is not null";
 $query  = $ROW->query($sql);
@@ -97,6 +98,7 @@ foreach ($result as $row) {
         'surety_contact_id'    => $bond_company_id,
     ]);
     $bond_id = $DCT->lastInsertId();
+    echo "$bond_id";
 
     if ($row['description']) {
         $insert_note->execute([

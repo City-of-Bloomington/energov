@@ -169,7 +169,7 @@ from row.bond_companies n;
 --------------------------------
 select b.id              as bond_id,
        b.bond_num        as bond_number,
-       b.`type`          as bond_type,
+       b.type            as bond_type,
        case when b.expire_date<now() then 'expired' else 'not expired yet' end as bond_status,
        --                as issue_date,
        b.expire_date     as expire_date,
@@ -180,7 +180,10 @@ select b.id              as bond_id,
        c.contact_id      as principal_contact_id,
        b.bond_company_id as surety_contact_id
 from row.bonds b
-left join company_contacts c on b.company_contact_id=c.id;
+left join bond_companies  bc on bc.id=b.bond_company_id -- there are bond_company_id of -1
+left join company_contacts c on  c.id=b.company_contact_id
+where b.bond_num        is not null
+  and b.bond_company_id is not null;
 
 --------------------------------
 -- permit
