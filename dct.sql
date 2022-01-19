@@ -144,7 +144,7 @@ create table inspection (
     inspector	            varchar(100),
     inspected_date_start    date,
     inspected_date_end      date,
-    comment                 varchar(500),
+    comment                 varchar(1024),
     inspection_case_number	varchar(100),
     legacy_data_source_name varchar(200) not null,
     legacy_id               int          not null,

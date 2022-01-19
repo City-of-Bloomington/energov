@@ -186,22 +186,44 @@ where b.bond_num        is not null
   and b.bond_company_id is not null;
 
 --------------------------------
+-- inspection
+--------------------------------
+select i.id              as inspection_number,
+       'Excavation'      as inspection_type,
+       i.status          as inspection_status,
+       --                as create_date,
+       --                as requested_for_date,
+       --                as scheduled_for_date,
+       --                as attempt_number,
+       case when i.status='Completed' then 1 else 0 end as completed,
+       --                as last_update_date,
+       --                as last_update_user,
+       i.inspector_id    as inspector,
+       i.date            as inspected_date_start,
+       i.date            as inspected_date_end,
+       i.notes           as comment,
+       --                as inspection_case_number
+from row.inspections i
+left join inspectors u on i.inspector_id=u.user_id;
+
+--------------------------------
 -- permit
 --------------------------------
-select r.id              as permit_number,
-       'rental'          as permit_type,
-       s.status_text     as permit_sub_type,
-       case when r.inactive is null then 'active' else 'inactive' end as permit_status,
+select p.permit_num      as permit_number,
+       'Excavation'      as permit_type,
+       p.permit_type     as permit_sub_type,
+       p.status          as permit_status,
        --                as district,
-       r.registered_date as apply_date,
-       --                as permit_description,
-       r.permit_issued   as issue_date,
-       r.permit_expires  as expire_date,
+       p.date            as apply_date,
+       p.project         as permit_description,
+       p.start_date      as issue_date,
+       --                as expire_date,
        --                as last_update_date,
        --                as last_inspection_date,
        --                as valuation,
        --                as square_footage,
-       'rentpro'         as legacy_data_source_name
+       'row'             as legacy_data_source_name,
        --                as project_number,
-       --                as assigned_to
-from row.excavpermits
+       concat_ws(' ', i.first_name, i.last_name) as assigned_to
+from row.excavpermits p
+left join inspectors  i on p.reviewer_id=i.user_id;
