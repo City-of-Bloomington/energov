@@ -7,7 +7,6 @@
  */
 declare (strict_types=1);
 $fields = [
-    'legacy_id',
     'permit_number',
     'permit_type',
     'permit_sub_type',
@@ -45,7 +44,6 @@ foreach ($result as $row) {
 
     $insert->execute([
         'permit_type'             => 'Excavation',
-        'legacy_id'               => $row['id'         ],
         'permit_number'           => $row['permit_num' ],
         'permit_sub_type'         => $row['permit_type'],
         'permit_status'           => $row['status'     ],

@@ -15,8 +15,7 @@ $fields = [
     'inspected_date_start',
     'inspected_date_end',
     'comment',
-    'legacy_data_source_name',
-    'legacy_id'
+    'legacy_data_source_name'
 ];
 
 $columns = implode(',', $fields);
@@ -43,14 +42,13 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrow/inspection: $percent% $row[id]";
 
     $insert->execute([
-        'inspection_number'       => "row_$row[id]",
+        'inspection_number'       => DATASOURCE_ROW."_$row[id]",
         'inspection_type'         => 'Excavation',
         'inspection_status'       => $row['status'],
         'completed'               => $row['status']=='Completed' ? 1 : 0,
         'inspected_date_start'    => $row['date'  ],
         'inspected_date_end'      => $row['date'  ],
         'comment'                 => $row['notes' ],
-        'legacy_id'               => $row['id'    ],
         'inspector'               => "$row[first_name] $row[last_name]",
         'legacy_data_source_name' => DATASOURCE_ROW,
     ]);

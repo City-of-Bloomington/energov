@@ -25,8 +25,8 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrental/permit_inspection: $percent% $row[insp_id]";
 
     $insert->execute([
-        'permit_number'     => "rental_$row[id]",
-        'inspection_number' => "rental_$row[insp_id]"
+        'permit_number'     => DATASOURCE_RENTAL."_$row[id]",
+        'inspection_number' => DATASOURCE_RENTAL."_$row[insp_id]"
     ]);
 }
 echo "\n";

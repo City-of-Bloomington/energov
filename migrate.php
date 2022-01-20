@@ -35,9 +35,7 @@ $DCT->query('delete from contact_address');
 $DCT->query('delete from contact_note');
 $DCT->query('delete from contact');
 
-$DCT->query("dbcc checkident('contact',             RESEED, 0)");
 $DCT->query("dbcc checkident('permit_activity',     RESEED, 0)");
-$DCT->query("dbcc checkident('permit_fee',          RESEED, 0)");
 $DCT->query("dbcc checkident('payment',             RESEED, 0)");
 $DCT->query("dbcc checkident('attachment_document', RESEED, 0)");
 
@@ -53,9 +51,10 @@ include './rental/permit_fee.php';
 include './rental/payment.php';
 include './rental/attachment_document.php';
 
-
 include './row/contact.php';
 include './row/bond.php';
+include './row/inspection.php';
+include './row/permit.php';
 
 function db_connect(array $config): \PDO
 {

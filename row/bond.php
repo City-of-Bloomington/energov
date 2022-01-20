@@ -30,7 +30,6 @@ $insert_bond  = $DCT->prepare("insert into bond ($columns) values($params)");
 $columns = implode(',', $note_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $note_fields));
 $insert_note  = $DCT->prepare("insert into bond_note ($columns) values($params)");
-$contact      = $DCT->prepare('select contact_id from contact where legacy_id=? and legacy_data_source_name=?');
 
 $sql    = "select b.id,
                   b.bond_num,
@@ -55,60 +54,44 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rrow/bond: $percent% $row[id] => ";
+    echo chr(27)."[2K\rrow/bond: $percent% $row[id]";
 
+    $bond_id         = DATASOURCE_ROW."_$row[id]";
     $company_id      = null;
     $person_id       = null;
     $bond_company_id = null;
 
     if ($row['company_id']) {
-        $contact->execute([$row['company_id'], 'row_companies']);
-        $company_id = $contact->fetchColumn();
-        if (!$company_id) {
-            echo "failed company lookup $row[company_id]\n";
-            exit();
-        }
+        $company_id = DATASOURCE_ROW."_companies_$row[company_id]";
     }
     if ($row['contact_id']) {
-        $contact->execute([$row['contact_id'], 'row_contacts']);
-        $person_id = $contact->fetchColumn();
-        if (!$person_id) {
-            echo "failed person lookup $row[contact_id]\n";
-            exit();
-        }
+        $person_id = DATASOURCE_ROW."_contacts_$row[contact_id]";
     }
     if ($row['bond_company_id']) {
-        $contact->execute([$row['bond_company_id'], 'row_bond_companies']);
-        $bond_company_id = $contact->fetchColumn();
-        if (!$bond_company_id) {
-            echo "failed bond_company lookup $row[bond_company_id]\n";
-            exit();
-        }
+        $bond_company_id = DATASOURCE_ROW."_bond_companies_$row[bond_company_id]";
     }
 
     $insert_bond->execute([
-        'bond_id'              => $row['id'             ],
-        'bond_number'          => $row['bond_num'       ],
-        'bond_type'            => $row['type'           ],
-        'bond_status'          => $row['status'         ],
-        'expire_date'          => $row['expire_date'    ],
-        'amount'               => $row['amount'         ],
+        'bond_id'              => $bond_id,
+        'bond_number'          => $row['bond_num'   ],
+        'bond_type'            => $row['type'       ],
+        'bond_status'          => $row['status'     ],
+        'expire_date'          => $row['expire_date'],
+        'amount'               => $row['amount'     ],
         'obligee_contact_id'   => $company_id,
         'principal_contact_id' => $person_id,
         'surety_contact_id'    => $bond_company_id,
     ]);
-    $bond_id = $DCT->lastInsertId();
-    echo "$bond_id";
 
     if ($row['description']) {
         $insert_note->execute([
-            'bond_id'   => $row['id'],
+            'bond_id'   => $bond_id,
             'note_text' => $row['description']
         ]);
     }
     if ($row['notes']) {
         $insert_note->execute([
-            'bond_id'   => $row['id'],
+            'bond_id'   => $bond_id,
             'note_text' => $row['notes']
         ]);
     }

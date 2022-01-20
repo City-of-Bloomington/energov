@@ -42,7 +42,7 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrental/permit_address: $percent% $row[id] => ";
     echo "$row[street_num] $row[street_dir] $row[street_name] $row[street_type] $row[sud_type] $row[sud_num]";
     $insert->execute([
-        'permit_number'     => "rental_$row[id]",
+        'permit_number'     => DATASOURCE_RENTAL."_$row[id]",
         'main_address'      => $row['subunit_id' ] ? 0 : 1,
         'street_number'     => $row['street_num' ],
         'pre_direction'     => $row['street_dir' ],

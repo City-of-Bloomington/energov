@@ -27,15 +27,15 @@ $columns = implode(',', $detail_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $detail_fields));
 $insert_details = $DCT->prepare("insert into permit_payment_detail ($columns) values($params)");
 
-$fee = $DCT->prepare('select permit_fee_id from permit_fee where legacy_id=? and legacy_data_source_name=?');
-
-$sql = "select bid,
-               receipt_no,
-               rec_from,
-               check_no,
-               rec_sum,
-               rec_date
-        from rental.reg_paid
+$sql = "select p.bid,
+               p.receipt_no,
+               p.rec_from,
+               p.check_no,
+               p.rec_sum,
+               p.rec_date,
+               b.bid      as bill_id
+        from      rental.reg_paid  p
+        left join rental.reg_bills b on p.bid=b.bid
         where rec_date is not null";
 $query  = $RENTAL->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -56,11 +56,9 @@ foreach ($result as $row) {
     $payment_id = $DCT->lastInsertId();
     echo "$payment_id";
 
-    $fee->execute([$row['bid'], DATASOURCE_RENTAL]);
-    $permit_fee_id = $fee->fetchColumn();
-    if ($permit_fee_id) {
+    if ($row['bill_id']) {
         $insert_details->execute([
-            'permit_fee_id' => $permit_fee_id,
+            'permit_fee_id' => DATASOURCE_RENTAL."_$row[bill_id]",
             'payment_id'    => $payment_id,
             'paid_amount'   => $row['rec_sum']
         ]);

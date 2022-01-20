@@ -35,7 +35,7 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/attachment_document: $percent% $row[rid]";
 
-    $permit_number = "rental_$row[rid]";
+    $permit_number = DATASOURCE_RENTAL."_$row[rid]";
 
     $dir  = SITE_HOME.'/rental/files';
     $file = "$row[year]/$row[image_file]";

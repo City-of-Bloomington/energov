@@ -35,7 +35,7 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrental/permit_activity: $percent% $row[rental_id]";
 
     $insert->execute([
-        'permit_number'    => "rental_$row[rental_id]",
+        'permit_number'    => DATASOURCE_RENTAL."_$row[rental_id]",
         'activity_type'    => 'Pull',
         'activity_comment' => $row['pull_text'],
         'activity_user'    => $row['username' ],

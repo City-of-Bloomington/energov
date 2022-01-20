@@ -16,7 +16,6 @@ $fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert permit_contact ($columns) values($params)");
-$contact = $DCT->prepare("select contact_id from contact where legacy_id=? and legacy_data_source_name=?");
 
 $query   = $RENTAL->query("select id, agent from rental.registr where agent>0");
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -27,22 +26,12 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/permit_contact agent: $percent% $row[id]";
 
-    $contact->execute([$row['agent'], DATASOURCE_RENTAL]);
-    $contact_id = $contact->fetchColumn();
-
-    if ($contact_id) {
-        $insert->execute([
-            'permit_number' => "rental_$row[id]",
-            'contact_id'    => $contact_id,
-            'contact_type'  => 'agent',
-            'primary_billing_contact' => 0
-        ]);
-    }
-    else {
-        print_r($row);
-        echo "contact_id: $contact_id";
-        exit();
-    }
+    $insert->execute([
+        'permit_number' => DATASOURCE_RENTAL."_$row[id]",
+        'contact_id'    => DATASOURCE_RENTAL."_$row[agent]",
+        'contact_type'  => 'agent',
+        'primary_billing_contact' => 0
+    ]);
 }
 echo "\n";
 
@@ -55,21 +44,11 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/permit_contact owner: $percent% $row[id]";
 
-    $contact->execute([$row['name_num'], DATASOURCE_RENTAL]);
-    $contact_id = $contact->fetchColumn();
-
-    if ($contact_id) {
-        $insert->execute([
-            'permit_number' => "rental_$row[id]",
-            'contact_id'    => $contact_id,
-            'contact_type'  => 'owner',
-            'primary_billing_contact' => 1
-        ]);
-    }
-    else {
-        print_r($row);
-        echo "contact_id: $contact_id";
-        exit();
-    }
+    $insert->execute([
+        'permit_number' => DATASOURCE_RENTAL."_$row[id]",
+        'contact_id'    => DATASOURCE_RENTAL."_$row[name_num]",
+        'contact_type'  => 'owner',
+        'primary_billing_contact' => 1
+    ]);
 }
 echo "\n";

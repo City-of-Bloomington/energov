@@ -8,7 +8,6 @@
 declare (strict_types=1);
 $fields = [
     'permit_number',
-    'legacy_id',
     'permit_type',
     'permit_sub_type',
     'permit_status',
@@ -40,8 +39,7 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrental/permit: $percent% $row[id]";
 
     $insert->execute([
-        'permit_number'           => "rental_$row[id]",
-        'legacy_id'               => $row['id'],
+        'permit_number'           => DATASOURCE_RENTAL."_$row[id]",
         'permit_type'             => 'rental',
         'permit_sub_type'         => $row['status_text'],
         'permit_status'           => $row['inactive'] ? 'inactive' : 'active',

@@ -15,8 +15,7 @@ $fields = [
     'inspected_date_start',
     'inspected_date_end',
     'comment',
-    'legacy_data_source_name',
-    'legacy_id'
+    'legacy_data_source_name'
 ];
 
 $columns = implode(',', $fields);
@@ -40,8 +39,7 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrental/inspection: $percent% $row[insp_id]";
 
     $insert->execute([
-        'inspection_number'    => "rental_$row[insp_id]",
-        'legacy_id'            => $row['insp_id'        ],
+        'inspection_number'    => DATASOURCE_RENTAL."_$row[insp_id]",
         'inspection_type'      => $row['inspection_type'],
         'inspection_status'    => $row['time_status'    ],
         'completed'            => 1,

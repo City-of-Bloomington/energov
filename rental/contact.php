@@ -7,6 +7,7 @@
  */
 declare (strict_types=1);
 $contact_fields = [
+    'contact_id',
     'first_name',
     'email',
     'business_phone',
@@ -14,8 +15,7 @@ $contact_fields = [
     'isactive',
     'is_company',
     'is_individual',
-    'legacy_data_source_name',
-    'legacy_id'
+    'legacy_data_source_name'
 ];
 $note_fields = [
     'contact_id',
@@ -65,10 +65,12 @@ $c       = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rrental/contact: $percent% $row[name_num] => ";
+    echo chr(27)."[2K\rrental/contact: $percent% $row[name_num]";
+
+    $contact_id = DATASOURCE_RENTAL."_$row[name_num]";
 
     $insert_contact->execute([
-        'legacy_id'               => $row['name_num'  ],
+        'contact_id'              => $contact_id,
         'first_name'              => $row['name'      ],
         'email'                   => $row['email'     ],
         'business_phone'          => $row['phone_work'],
@@ -78,8 +80,6 @@ foreach ($result as $row) {
         'is_individual'           => 0,
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ]);
-    $contact_id = $DCT->lastInsertId();
-    echo "$contact_id";
 
     if ($row['notes']) {
         $insert_note->execute([

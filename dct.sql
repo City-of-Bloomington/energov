@@ -1,5 +1,5 @@
 create table contact (
-    contact_id              int          not null primary key identity,
+    contact_id              varchar(100) not null primary key,
     company_name            varchar(200),
     first_name              varchar(100),
     middle_name             varchar(100),
@@ -17,13 +17,11 @@ create table contact (
     last_update_date        datetime,
     last_update_user        varchar(100),
     isactive                bit          not null,
-    legacy_data_source_name varchar(200) not null,
-    legacy_id               int          not null,
-    unique (legacy_data_source_name, legacy_id)
+    legacy_data_source_name varchar(200) not null
 );
 
 create table contact_address (
-    contact_id        int          not null,
+    contact_id        varchar(100) not null,
     main_address      bit,
     address_type      varchar(100),
     street_number     varchar(400),
@@ -47,7 +45,7 @@ create table contact_address (
 );
 
 create table contact_note (
-    contact_id int          not null,
+    contact_id varchar(100) not null,
     note_text  varchar(500) not null,
     note_title varchar(100),
     note_user  varchar(100),
@@ -73,14 +71,12 @@ create table permit (
     square_footage          decimal (9),
     project_number          varchar(100),
     assigned_to             varchar(200),
-    legacy_data_source_name varchar(200) not null,
-    legacy_id               int          not null,
-    unique (legacy_data_source_name, legacy_id)
+    legacy_data_source_name varchar(200) not null
 );
 
 create table permit_contact (
     permit_number   varchar(100) not null,
-    contact_id      int          not null,
+    contact_id      varchar(100) not null,
     contact_type    varchar(32),
     primary_billing_contact bit,
     foreign key (permit_number) references permit (permit_number),
@@ -146,9 +142,7 @@ create table inspection (
     inspected_date_end      date,
     comment                 varchar(1024),
     inspection_case_number	varchar(100),
-    legacy_data_source_name varchar(200) not null,
-    legacy_id               int          not null,
-    unique (legacy_data_source_name, legacy_id)
+    legacy_data_source_name varchar(200) not null
 );
 
 create table permit_inspection (
@@ -159,7 +153,7 @@ create table permit_inspection (
 );
 
 create table permit_fee (
-    permit_fee_id           int          not null primary key identity,
+    permit_fee_id           varchar(100) not null primary key,
     permit_number           varchar(100) not null,
     fee_type                varchar(100),
     fee_amount              money        not null,
@@ -167,10 +161,8 @@ create table permit_fee (
     created_by_user         varchar(100),
     input_value             decimal,
     fee_note                varchar(100),
-    legacy_data_source_name varchar(200) not null,
-    legacy_id               int          not null,
-    foreign key (permit_number) references permit(permit_number),
-    unique (legacy_data_source_name, legacy_id)
+    legacy_data_source_name varchar(200) not null
+    foreign key (permit_number) references permit(permit_number)
 );
 
 create table payment (
@@ -185,9 +177,9 @@ create table payment (
 );
 
 create table permit_payment_detail (
-    permit_fee_id int   not null,
-    payment_id    int   not null,
-    paid_amount   money not null,
+    permit_fee_id varchar(100) not null,
+    payment_id    int          not null,
+    paid_amount   money        not null,
     foreign key (permit_fee_id) references permit_fee(permit_fee_id),
     foreign key (   payment_id) references    payment(   payment_id)
 );
@@ -207,7 +199,7 @@ create table attachment_document (
 );
 
 create table bond (
-    bond_id               int          not null primary key,
+    bond_id               varchar(100) not null primary key,
     bond_number           varchar(100) not null,
     bond_type             varchar(100) not null,
     bond_status           varchar(100) not null,
@@ -215,9 +207,9 @@ create table bond (
     expire_date           date,
     release_date          date,
     amount                money        not null,
-    obligee_contact_id    int,
-    principal_contact_id  int,
-    surety_contact_id     int,
+    obligee_contact_id    varchar(100),
+    principal_contact_id  varchar(100),
+    surety_contact_id     varchar(100),
     global_entity_account_number varchar(100),
     foreign key (  obligee_contact_id) references contact(contact_id),
     foreign key (principal_contact_id) references contact(contact_id),
@@ -225,7 +217,7 @@ create table bond (
 );
 
 create table bond_note (
-    bond_id    int          not null,
+    bond_id    varchar(100) not null,
     note_text  varchar(500) not null,
     note_title varchar(100),
     note_user  varchar(100),

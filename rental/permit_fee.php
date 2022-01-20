@@ -7,11 +7,11 @@
  */
 declare (strict_types=1);
 $fields = [
+    'permit_fee_id',
     'permit_number',
     'fee_amount',
     'fee_date',
-    'legacy_data_source_name',
-    'legacy_id'
+    'legacy_data_source_name'
 ];
 
 $columns = implode(',', $fields);
@@ -25,7 +25,7 @@ $c       = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rrental/permit_fee: $percent% $row[bid] => ";
+    echo chr(27)."[2K\rrental/permit_fee: $percent% $row[bid]";
 
     $fee_amount = (((int)$row[    'bul_rate'] * (int)$row[    'bul_cnt'])
                  + ((int)$row[   'unit_rate'] * (int)$row[   'unit_cnt'])
@@ -39,14 +39,12 @@ foreach ($result as $row) {
                  +  (int)$row['other_fee2']
                  -  (int)$row['credit']);
     $data = [
-        'permit_number'           => "rental_$row[id]",
+        'permit_fee_id'           => DATASOURCE_RENTAL."_$row[bid]",
+        'permit_number'           => DATASOURCE_RENTAL."_$row[id]",
         'fee_amount'              => $fee_amount,
         'fee_date'                => $row['issue_date'],
-        'legacy_data_source_name' => DATASOURCE_RENTAL,
-        'legacy_id'               => $row['bid']
+        'legacy_data_source_name' => DATASOURCE_RENTAL
     ];
     $insert->execute($data);
-    $permit_fee_id = $DCT->lastInsertId();
-    echo "$permit_fee_id";
 }
 echo "\n";
