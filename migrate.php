@@ -6,17 +6,22 @@
 declare (strict_types=1);
 include './MasterAddress.php';
 
+define('COUNTRY_TYPE', 'earth');
+
 define('DATASOURCE_RENTAL',   'rentpro' );
 define('DATASOURCE_ROW',      'row'     );
 define('DATASOURCE_CITATION', 'citation');
 define('DATASOURCE_NOV',      'nov'     );
 
 define('SITE_HOME', !empty($_SERVER['SITE_HOME']) ? $_SERVER['SITE_HOME'] : __DIR__.'/data');
-$config  = include SITE_HOME.'/config.php';
-$RENTAL  = db_connect($config['db']['rental' ]);
-$ROW     = db_connect($config['db']['row'    ]);
-$DCT     = db_connect($config['db']['energov']);
+$config   = include SITE_HOME.'/config.php';
+$CITATION = db_connect($config['db']['citation']);
+$RENTAL   = db_connect($config['db']['rental' ]);
+$ROW      = db_connect($config['db']['row'    ]);
+$DCT      = db_connect($config['db']['energov']);
 
+$DCT->query('delete from code_case_violation');
+$DCT->query('delete from code_case');
 $DCT->query('delete from bond_note');
 $DCT->query('delete from bond');
 $DCT->query('delete from attachment_document');
@@ -55,6 +60,8 @@ include './row/contact.php';
 include './row/bond.php';
 include './row/inspection.php';
 include './row/permit.php';
+
+include './citation/code_case.php';
 
 function db_connect(array $config): \PDO
 {

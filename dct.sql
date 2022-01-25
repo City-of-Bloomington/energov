@@ -224,3 +224,68 @@ create table bond_note (
     note_date  date,
     foreign key (bond_id) references bond(bond_id)
 );
+
+create table code_case (
+    case_number          varchar(100) not null primary key,
+    case_type            varchar(100) not null,
+    case_status          varchar(100),
+    district             varchar(100),
+    open_date            date         not null,
+    case_description     varchar(1024),
+    closed_date          date,
+    assigned_to_user     varchar(100),
+    created_by_user      varchar(100),
+    last_update_date     date,
+    last_update_user     varchar(100),
+    project_number       varchar(100),
+    parent_permit_number varchar(100),
+    parent_plan_number   varchar(100),
+    foreign key (parent_permit_number) references permit(permit_number)
+);
+
+create table code_case_contact (
+    case_number     varchar(100) not null,
+    contact_id      varchar(100) not null,
+    contact_type    varchar(32),
+    primary_billing_contact bit,
+    foreign key (case_number) references code_case(case_number),
+    foreign key (contact_id ) references contact(contact_id)
+);
+
+create table code_case_violation (
+    violation_number       varchar(100) not null primary key,
+    case_number            varchar(100) not null,
+    violation_code         varchar(100),
+    violation_status       varchar(100),
+    violation_priority     varchar(100),
+    violation_note         varchar(1024),
+    corrective_action_memo varchar(1024),
+    citation_date          date   not null,
+    compliance_date        date,
+    resolved_date          date,
+    foreign key (case_number) references code_case(case_number)
+);
+
+create table code_case_address (
+    case_number       varchar(100) not null,
+    main_address      bit,
+    address_type      varchar(100),
+    street_number     varchar(400),
+    pre_direction     varchar(60 ),
+    street_name       varchar(400),
+    street_type       varchar(100),
+    post_direction    varchar(60 ),
+    unit_suite_number varchar(40 ),
+    address_line_3    varchar(400),
+    po_box            varchar(100),
+    city              varchar(100),
+    state_code        varchar(100),
+    province          varchar(100),
+    zip               varchar(100),
+    county_code       varchar(100),
+    country_code      varchar(100),
+    country_type      varchar(100) not null,
+    last_update_date  datetime,
+    last_update_user  varchar(100),
+    foreign key (case_number) references code_case(case_number)
+);

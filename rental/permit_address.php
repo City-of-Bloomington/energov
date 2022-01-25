@@ -50,7 +50,7 @@ foreach ($result as $row) {
         'street_type'       => $row['street_type'],
         'post_direction'    => $row['post_dir'   ],
         'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
-        'country_type'      => 'earth',
+        'country_type'      => COUNTRY_TYPE,
     ]);
 }
 echo "\n";

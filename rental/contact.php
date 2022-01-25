@@ -101,7 +101,7 @@ foreach ($result as $row) {
             'city'              => $row['city' ],
             'state_code'        => $row['state'],
             'zip'               => $row['zip'  ],
-            'country_type'      => 'unknown'
+            'country_type'      => COUNTRY_TYPE
         ];
         $insert_address->execute($data);
     }
