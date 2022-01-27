@@ -225,6 +225,15 @@ create table bond_note (
     foreign key (bond_id) references bond(bond_id)
 );
 
+create table permit_bond (
+    permit_number    varchar(100) not null,
+    bond_id          varchar(100) not null,
+    last_update_user varchar(100),
+    last_update_date date,
+    foreign key (permit_number) references permit(permit_number),
+    foreign key (bond_id      ) references bond(bond_id)
+);
+
 create table code_case (
     case_number          varchar(100) not null primary key,
     case_type            varchar(100) not null,

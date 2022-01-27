@@ -6,7 +6,7 @@
  * @param $DCT  PDO connection to DCT database
  */
 declare (strict_types=1);
-$fields = [
+$permit_fields = [
     'permit_number',
     'permit_type',
     'permit_sub_type',
@@ -18,9 +18,41 @@ $fields = [
     'legacy_data_source_name'
 ];
 
-$columns = implode(',', $fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $fields));
-$insert  = $DCT->prepare("insert into permit ($columns) values($params)");
+$fee_fields = [
+    'permit_fee_id',
+    'permit_number',
+    'fee_amount',
+    'fee_date',
+    'legacy_data_source_name'
+];
+
+$bond_fields = [
+    'permit_number',
+    'bond_id'
+];
+
+$contact_fields = [
+    'permit_number',
+    'contact_id',
+    'contact_type',
+    'primary_billing_contact'
+];
+
+$columns = implode(',', $permit_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $permit_fields));
+$insert_permit = $DCT->prepare("insert into permit ($columns) values($params)");
+
+$columns = implode(',', $fee_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
+$insert_fee = $DCT->prepare("insert into permit_fee ($columns) values($params)");
+
+$columns = implode(',', $bond_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $bond_fields));
+$insert_bond = $DCT->prepare("insert into permit_bond ($columns) values($params)");
+
+$columns = implode(',', $contact_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
+$insert_contact = $DCT->prepare("insert into permit_contact ($columns) values($params)");
 
 $sql = "select p.id,
                p.permit_num,
@@ -30,9 +62,14 @@ $sql = "select p.id,
                p.project,
                p.start_date,
                i.first_name,
-               i.last_name
-        from row.excavpermits p
-        left join inspectors  i on p.reviewer_id=i.user_id";
+               i.last_name,
+               p.fee,
+               p.bond_id,
+               c.company_id,
+               c.contact_id
+        from row.excavpermits      p
+        left join inspectors       i on p.reviewer_id=i.user_id
+        left join company_contacts c on c.id=p.company_contact_id";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -42,7 +79,7 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrow/permit: $percent% $row[id]";
 
-    $insert->execute([
+    $insert_permit->execute([
         'permit_type'             => 'Excavation',
         'permit_number'           => $row['permit_num' ],
         'permit_sub_type'         => $row['permit_type'],
@@ -53,5 +90,40 @@ foreach ($result as $row) {
         'assigned_to'             => "$row[first_name] $row[last_name]",
         'legacy_data_source_name' => DATASOURCE_ROW
     ]);
+
+    $fee_id     = DATASOURCE_ROW."_$row[id]";
+    $fee_amount = (float)$row['fee'];
+    if ($fee_amount > 0) {
+        $insert_fee->execute([
+            'permit_fee_id' => $fee_id,
+            'permit_number' => $row['permit_num'],
+            'fee_amount'    => $fee_amount,
+            'fee_date'      => $row['date'],
+            'legacy_data_source_name' => DATASOURCE_ROW
+        ]);
+    }
+
+    if ((int)$row['bond_id'] > 0) {
+        $insert_bond->execute([
+            'permit_number' => $row['permit_num'],
+            'bond_id'       => DATASOURCE_ROW."_$row[bond_id]"
+        ]);
+    }
+
+    if ($row['company_id'] && $row['contact_id']) {
+        $insert_contact->execute([
+            'permit_number'           => $row['permit_num'],
+            'contact_id'              => DATASOURCE_ROW."_companies_$row[company_id]",
+            'contact_type'            => 'company',
+            'primary_billing_contact' => 1
+        ]);
+
+        $insert_contact->execute([
+            'permit_number'           => $row['permit_num'],
+            'contact_id'              => DATASOURCE_ROW."_contacts_$row[contact_id]",
+            'contact_type'            => 'contact',
+            'primary_billing_contact' => 0
+        ]);
+    }
 }
 echo "\n";

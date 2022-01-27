@@ -119,3 +119,4 @@ foreach ($result as $row) {
         'country_type'      => COUNTRY_TYPE
     ]);
 }
+echo "\n";
