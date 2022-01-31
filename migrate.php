@@ -20,6 +20,7 @@ $RENTAL   = db_connect($config['db']['rental' ]);
 $ROW      = db_connect($config['db']['row'    ]);
 $DCT      = db_connect($config['db']['energov']);
 
+$DCT->query('delete from code_case_contact');
 $DCT->query('delete from code_case_violation');
 $DCT->query('delete from code_case');
 $DCT->query('delete from bond_note');
@@ -62,6 +63,7 @@ include './row/inspection.php';
 include './row/permit.php';
 
 include './citation/code_case.php';
+include './citation/contact.php';
 
 function db_connect(array $config): \PDO
 {
