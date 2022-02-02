@@ -7,6 +7,7 @@
  */
 declare (strict_types=1);
 $payment_fields = [
+    'payment_id',
     'receipt_number',
     'payment_method',
     'check_number',
@@ -44,17 +45,18 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rrental/payment: $percent% $row[bid] => ";
+    echo chr(27)."[2K\rrental/payment: $percent% $row[receipt_no]";
+
+    $payment_id = DATASOURCE_RENTAL."_$row[receipt_no]";
 
     $insert_payment->execute([
+        'payment_id'     => $payment_id,
         'receipt_number' => $row['receipt_no'],
         'payment_method' => $row['rec_from'  ],
         'check_number'   => $row['check_no'  ],
         'payment_amount' => $row['rec_sum'   ],
         'payment_date'   => $row['rec_date'  ]
     ]);
-    $payment_id = $DCT->lastInsertId();
-    echo "$payment_id";
 
     if ($row['bill_id']) {
         $insert_details->execute([

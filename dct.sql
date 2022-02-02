@@ -166,7 +166,7 @@ create table permit_fee (
 );
 
 create table payment (
-    payment_id      int          not null primary key identity,
+    payment_id      varchar(100) not null primary key,
     receipt_number  varchar(100) not null,
     payment_method  varchar(100),
     check_number    varchar(100),
@@ -178,7 +178,7 @@ create table payment (
 
 create table permit_payment_detail (
     permit_fee_id varchar(100) not null,
-    payment_id    int          not null,
+    payment_id    varchar(100) not null,
     paid_amount   money        not null,
     foreign key (permit_fee_id) references permit_fee(permit_fee_id),
     foreign key (   payment_id) references    payment(   payment_id)
@@ -297,4 +297,21 @@ create table code_case_address (
     last_update_date  datetime,
     last_update_user  varchar(100),
     foreign key (case_number) references code_case(case_number)
+);
+
+create table code_case_violation_fee (
+    code_case_violation_fee_id varchar(100) not null primary key,
+    violation_number           varchar(100) not null,
+    fee_type                   varchar(100),
+    fee_amount                 money        not null,
+    fee_date                   date,
+    created_by_user            varchar(100),
+    input_value                decimal,
+    fee_note                   varchar(100),
+    foreign key (violation_number) references code_case_violation(violation_number)
+);
+
+create table code_case_violation_payment_detail (
+    code_case_violation_fee_id varchar(100) not null,
+    payment_id
 );
