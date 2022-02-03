@@ -20,9 +20,13 @@ $RENTAL   = db_connect($config['db']['rental' ]);
 $ROW      = db_connect($config['db']['row'    ]);
 $DCT      = db_connect($config['db']['energov']);
 
-$DCT->query('delete from code_case_contact');
+$DCT->query('delete from code_case_violation_payment_detail');
+$DCT->query('delete from code_case_violation_fee');
 $DCT->query('delete from code_case_violation');
+$DCT->query('delete from code_case_contact');
+$DCT->query('delete from code_case_address');
 $DCT->query('delete from code_case');
+$DCT->query('delete from permit_bond');
 $DCT->query('delete from bond_note');
 $DCT->query('delete from bond');
 $DCT->query('delete from attachment_document');
@@ -42,7 +46,6 @@ $DCT->query('delete from contact_note');
 $DCT->query('delete from contact');
 
 $DCT->query("dbcc checkident('permit_activity',     RESEED, 0)");
-$DCT->query("dbcc checkident('payment',             RESEED, 0)");
 $DCT->query("dbcc checkident('attachment_document', RESEED, 0)");
 
 include './rental/contact.php';
@@ -64,6 +67,8 @@ include './row/permit.php';
 
 include './citation/code_case.php';
 include './citation/contact.php';
+include './citation/payment.php';
+include './citation/attachment_document.php';
 
 function db_connect(array $config): \PDO
 {

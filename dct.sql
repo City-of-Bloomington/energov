@@ -190,7 +190,7 @@ create table attachment_document (
     parent_case_table  varchar(100) not null,
     file_path          varchar(400),
     file_name          varchar(100) not null,
-    doc_comment        varchar(100),
+    doc_comment        varchar(500),
     doc_date           datetime,
     attached_by        varchar(100),
     attachment_group   varchar(100),
@@ -313,5 +313,8 @@ create table code_case_violation_fee (
 
 create table code_case_violation_payment_detail (
     code_case_violation_fee_id varchar(100) not null,
-    payment_id
+    payment_id                 varchar(100) not null,
+    paid_amount                money        not null,
+    foreign key (code_case_violation_fee_id) references code_case_violation_fee(code_case_violation_fee_id),
+    foreign key (payment_id) references payment(payment_id)
 );

@@ -40,6 +40,13 @@ $address_fields = [
     'country_type'
 ];
 
+$fee_fields = [
+    'code_case_violation_fee_id',
+    'violation_number',
+    'fee_amount',
+    'fee_date'
+];
+
 $columns = implode(',', $case_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $case_fields));
 $insert_case  = $DCT->prepare("insert into code_case ($columns) values($params)");
@@ -51,6 +58,11 @@ $insert_violation  = $DCT->prepare("insert into code_case_violation ($columns) v
 $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address  = $DCT->prepare("insert into code_case_address ($columns) values($params)");
+
+$columns = implode(',', $fee_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
+$insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
+
 
 $sql     = "select c.id,
                    c.status,
@@ -69,7 +81,8 @@ $sql     = "select c.id,
                    c.address_state,
                    c.address_zipcode,
                    c.sud_type,
-                   c.sud_num
+                   c.sud_num,
+                   c.amount
             from citations       c
             join violation_types v on v.id=c.violation
             left join users      u on u.id=c.inspector_id";
@@ -84,6 +97,7 @@ foreach ($result as $row) {
 
     $case_number      = DATASOURCE_CITATION."_$row[id]";
     $violation_number = $case_number;
+    $fee_id           = $case_number;
 
     $insert_case->execute([
         'case_number'      => $case_number,
@@ -118,5 +132,15 @@ foreach ($result as $row) {
         'zip'               => $row['address_zipcode'],
         'country_type'      => COUNTRY_TYPE
     ]);
+
+    $amount = (float)$row['amount'];
+    if ($amount > 0) {
+        $insert_fee->execute([
+            'code_case_violation_fee_id' => $fee_id,
+            'violation_number'           => $violation_number,
+            'fee_amount'                 => $amount,
+            'fee_date'                   => $row['date_writen']
+        ]);
+    }
 }
 echo "\n";
