@@ -22,8 +22,7 @@ $fee_fields = [
     'permit_fee_id',
     'permit_number',
     'fee_amount',
-    'fee_date',
-    'legacy_data_source_name'
+    'fee_date'
 ];
 
 $bond_fields = [
@@ -66,10 +65,13 @@ $sql = "select p.id,
                p.fee,
                p.bond_id,
                c.company_id,
-               c.contact_id
+               c.contact_id,
+               b.bond_num,
+               b.bond_company_id
         from row.excavpermits      p
         left join inspectors       i on p.reviewer_id=i.user_id
-        left join company_contacts c on c.id=p.company_contact_id";
+        left join company_contacts c on c.id=p.company_contact_id
+        left join bonds            b on b.id=p.bond_id";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -79,14 +81,17 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrow/permit: $percent% $row[id]";
 
+    $apply_date = $row['date'      ] ?? $row['start_date'];
+    $issue_date = $row['start_date'] ?? $row['date'      ];
+
     $insert_permit->execute([
         'permit_type'             => 'Excavation',
         'permit_number'           => $row['permit_num' ],
         'permit_sub_type'         => $row['permit_type'],
         'permit_status'           => $row['status'     ],
         'permit_description'      => $row['project'    ],
-        'apply_date'              => $row['date'       ],
-        'issue_date'              => $row['start_date' ],
+        'apply_date'              => $apply_date,
+        'issue_date'              => $issue_date,
         'assigned_to'             => "$row[first_name] $row[last_name]",
         'legacy_data_source_name' => DATASOURCE_ROW
     ]);
@@ -98,12 +103,14 @@ foreach ($result as $row) {
             'permit_fee_id' => $fee_id,
             'permit_number' => $row['permit_num'],
             'fee_amount'    => $fee_amount,
-            'fee_date'      => $row['date'],
-            'legacy_data_source_name' => DATASOURCE_ROW
+            'fee_date'      => $row['date']
         ]);
     }
 
-    if ((int)$row['bond_id'] > 0) {
+    if ((int)$row['bond_id'] > 0
+          && $row['bond_num']
+          && $row['bond_company_id']
+          && $row['bond_company_id'] != '-1') {
         $insert_bond->execute([
             'permit_number' => $row['permit_num'],
             'bond_id'       => DATASOURCE_ROW."_$row[bond_id]"

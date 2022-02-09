@@ -71,6 +71,10 @@ foreach ($result as $row) {
         $bond_company_id = DATASOURCE_ROW."_bond_companies_$row[bond_company_id]";
     }
 
+    if (!$company_id)      { $company_id      = $bond_company_id ?? $person_id; }
+    if (!$person_id )      { $person_id       = $company_id      ?? $bond_company_id; }
+    if (!$bond_company_id) { $bond_company_id = $company_id      ?? $person_id; }
+
     $insert_bond->execute([
         'bond_id'              => $bond_id,
         'bond_number'          => $row['bond_num'   ],

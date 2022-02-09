@@ -9,6 +9,7 @@
  */
 declare (strict_types=1);
 $fields = [
+    'activity_number',
     'permit_number',
     'activity_type',
     'activity_comment',
@@ -19,7 +20,8 @@ $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit_activity ($columns) values($params)");
 
-$sql = "select h.rental_id,
+$sql = "select h.id,
+               h.rental_id,
                r.pull_text,
                h.username,
                h.pull_date
@@ -32,9 +34,10 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rrental/permit_activity: $percent% $row[rental_id]";
+    echo chr(27)."[2K\rrental/permit_activity: $percent% $row[id]";
 
     $insert->execute([
+        'activity_number'  => DATASOURCE_RENTAL."_$row[id]",
         'permit_number'    => DATASOURCE_RENTAL."_$row[rental_id]",
         'activity_type'    => 'Pull',
         'activity_comment' => $row['pull_text'],

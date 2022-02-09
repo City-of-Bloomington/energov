@@ -10,12 +10,12 @@ $fields = [
     'inspection_number',
     'inspection_type',
     'inspection_status',
+    'create_date',
     'completed',
     'inspector',
     'inspected_date_start',
     'inspected_date_end',
-    'comment',
-    'legacy_data_source_name'
+    'comment'
 ];
 
 $columns = implode(',', $fields);
@@ -44,10 +44,10 @@ foreach ($result as $row) {
         'inspection_status'    => $row['time_status'    ],
         'completed'            => 1,
         'inspector'            => $row['inspected_by'   ],
+        'create_date'          => $row['inspection_date'],
         'inspected_date_start' => $row['inspection_date'],
         'inspected_date_end'   => $row['inspection_date'],
-        'comment'              => $row['comments'       ],
-        'legacy_data_source_name' => DATASOURCE_RENTAL
+        'comment'              => $row['comments'       ]
     ]);
 }
 echo "\n";

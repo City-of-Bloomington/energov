@@ -17,7 +17,17 @@ $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert permit_contact ($columns) values($params)");
 
-$query   = $RENTAL->query("select id, agent from rental.registr where agent>0");
+$sql     = "select r.id,
+                   r.agent
+            from rental.registr r
+            left join (
+                select p.rental_id, min(p.pull_date) as earliest_pull
+                from rental.pull_history p
+                group by p.rental_id
+            ) pulls on pulls.rental_id=r.id
+            where (r.registered_date is not null or earliest_pull is not null)
+              and agent>0";
+$query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
 $c       = 0;
@@ -35,7 +45,17 @@ foreach ($result as $row) {
 }
 echo "\n";
 
-$query  = $RENTAL->query("select id, name_num from rental.regid_name");
+$sql     = "select r.id,
+                   n.name_num
+            from rental.registr   r
+            join rental.regid_name n on r.id=n.id
+            left join (
+                select p.rental_id, min(p.pull_date) as earliest_pull
+                from rental.pull_history p
+                group by p.rental_id
+            ) pulls on pulls.rental_id=r.id
+            where (r.registered_date is not null or earliest_pull is not null)";
+$query  = $RENTAL->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
 $c      = 0;

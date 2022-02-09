@@ -77,7 +77,7 @@ foreach ($result as $row) {
         'home_phone'              => $row['phone_home'],
         'isactive'                => 1,
         'is_company'              => 0,
-        'is_individual'           => 0,
+        'is_individual'           => 1,
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ]);
 

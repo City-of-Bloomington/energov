@@ -10,12 +10,12 @@ $fields = [
     'inspection_number',
     'inspection_type',
     'inspection_status',
+    'create_date',
     'completed',
     'inspector',
     'inspected_date_start',
     'inspected_date_end',
-    'comment',
-    'legacy_data_source_name'
+    'comment'
 ];
 
 $columns = implode(',', $fields);
@@ -25,7 +25,6 @@ $insert  = $DCT->prepare("insert into inspection ($columns) values($params)");
 $sql = "select i.id,
                i.status,
                i.inspector_id,
-               i.date,
                i.date,
                i.notes,
                u.first_name,
@@ -44,13 +43,13 @@ foreach ($result as $row) {
     $insert->execute([
         'inspection_number'       => DATASOURCE_ROW."_$row[id]",
         'inspection_type'         => 'Excavation',
+        'create_date'             => $row['date'  ],
         'inspection_status'       => $row['status'],
         'completed'               => $row['status']=='Completed' ? 1 : 0,
         'inspected_date_start'    => $row['date'  ],
         'inspected_date_end'      => $row['date'  ],
         'comment'                 => $row['notes' ],
-        'inspector'               => "$row[first_name] $row[last_name]",
-        'legacy_data_source_name' => DATASOURCE_ROW,
+        'inspector'               => "$row[first_name] $row[last_name]"
     ]);
 }
 echo "\n";

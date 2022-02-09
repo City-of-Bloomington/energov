@@ -28,16 +28,23 @@ $columns = implode(',', $detail_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $detail_fields));
 $insert_details = $DCT->prepare("insert into permit_payment_detail ($columns) values($params)");
 
-$sql = "select p.bid,
-               p.receipt_no,
-               p.rec_from,
-               p.check_no,
-               p.rec_sum,
-               p.rec_date,
-               b.bid      as bill_id
-        from      rental.reg_paid  p
-        left join rental.reg_bills b on p.bid=b.bid
-        where rec_date is not null";
+$sql    = "select p.bid,
+                  p.receipt_no,
+                  p.rec_from,
+                  p.check_no,
+                  p.rec_sum,
+                  p.rec_date,
+                  b.bid      as bill_id
+           from rental.registr   r
+           join rental.reg_bills b on r.id=b.id
+           join rental.reg_paid  p on b.bid=p.bid
+           left join (
+               select p.rental_id, min(p.pull_date) as earliest_pull
+               from rental.pull_history p
+               group by p.rental_id
+           ) pulls on pulls.rental_id=r.id
+           where (r.registered_date is not null or earliest_pull is not null)
+             and p.rec_date is not null";
 $query  = $RENTAL->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);

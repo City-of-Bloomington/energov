@@ -72,7 +72,7 @@ foreach ($result as $row) {
         'last_name'     => $row['lname'],
         'isactive'      => 0,
         'is_company'    => 0,
-        'is_individual' => 0,
+        'is_individual' => 1,
         'legacy_data_source_name' => DATASOURCE_CITATION
     ]);
 
@@ -122,7 +122,7 @@ foreach ($result as $row) {
         'last_name'     => $row['lname'],
         'isactive'      => 0,
         'is_company'    => 0,
-        'is_individual' => 0,
+        'is_individual' => 1,
         'legacy_data_source_name' => DATASOURCE_CITATION
     ]);
 

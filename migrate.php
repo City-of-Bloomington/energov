@@ -6,7 +6,7 @@
 declare (strict_types=1);
 include './MasterAddress.php';
 
-define('COUNTRY_TYPE', 'earth');
+define('COUNTRY_TYPE', 'US');
 
 define('DATASOURCE_RENTAL',   'rentpro' );
 define('DATASOURCE_ROW',      'row'     );
@@ -18,6 +18,7 @@ $config   = include SITE_HOME.'/config.php';
 $CITATION = db_connect($config['db']['citation']);
 $RENTAL   = db_connect($config['db']['rental' ]);
 $ROW      = db_connect($config['db']['row'    ]);
+$NOV      = db_connect($config['db']['nov'    ]);
 $DCT      = db_connect($config['db']['energov']);
 
 $DCT->query('delete from code_case_violation_payment_detail');
@@ -45,7 +46,6 @@ $DCT->query('delete from contact_address');
 $DCT->query('delete from contact_note');
 $DCT->query('delete from contact');
 
-$DCT->query("dbcc checkident('permit_activity',     RESEED, 0)");
 $DCT->query("dbcc checkident('attachment_document', RESEED, 0)");
 
 include './rental/contact.php';

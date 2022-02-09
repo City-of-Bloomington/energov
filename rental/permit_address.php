@@ -31,7 +31,13 @@ $sql = "select r.id,
                a.sud_type,
                a.sud_num
         from rental.registr  r
-        join rental.address2 a on r.id=a.registr_id";
+        join rental.address2 a on r.id=a.registr_id
+        left join (
+            select p.rental_id, min(p.pull_date) as earliest_pull
+            from rental.pull_history p
+            group by p.rental_id
+        ) pulls on pulls.rental_id=r.id
+        where (r.registered_date is not null or earliest_pull is not null)";
 $query  = $RENTAL->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);

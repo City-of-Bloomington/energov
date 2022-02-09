@@ -15,7 +15,16 @@ $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit_inspection ($columns) values($params)");
 
-$query   = $RENTAL->query("select id, insp_id from rental.inspections");
+$sql     = "select i.id, i.insp_id
+            from rental.registr     r
+            join rental.inspections i on r.id=i.id
+            left join (
+                select p.rental_id, min(p.pull_date) as earliest_pull
+                from rental.pull_history p
+                group by p.rental_id
+            ) pulls on pulls.rental_id=r.id
+            where (r.registered_date is not null or earliest_pull is not null)";
+$query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
 $c       = 0;
