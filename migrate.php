@@ -33,6 +33,7 @@ $DCT->query('delete from bond');
 $DCT->query('delete from attachment_document');
 $DCT->query('delete from permit_payment_detail');
 $DCT->query('delete from payment');
+$DCT->query('delete from permit_fee_adjustment');
 $DCT->query('delete from permit_fee');
 $DCT->query('delete from permit_activity');
 $DCT->query('delete from permit_note');

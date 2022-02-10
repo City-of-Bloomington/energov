@@ -50,7 +50,11 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$query  = $ROW->query('select * from companies');
+$sql    = "select n.*
+           from excavpermits     p
+           join company_contacts c on c.id=p.company_contact_id
+           join companies        n on n.id=c.company_id";
+$query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
 $c      = 0;
@@ -104,7 +108,11 @@ foreach ($result as $row) {
 }
 echo "\n";
 
-$query  = $ROW->query('select * from contacts');
+$sql    = "select n.*
+           from excavpermits     p
+           join company_contacts c on c.id=p.company_contact_id
+           join contacts         n on n.id=c.contact_id";
+$query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
 $c      = 0;
@@ -158,7 +166,11 @@ foreach ($result as $row) {
 }
 echo "\n";
 
-$query  = $ROW->query('select * from bond_companies');
+$sql    = "select n.*
+           from excavpermits   p
+           join bonds          b on b.id=p.bond_id
+           join bond_companies n on n.id=b.bond_company_id";
+$query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
 $c      = 0;

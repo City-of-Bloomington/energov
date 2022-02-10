@@ -47,17 +47,29 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$select  = "select n.name_num,
-                   n.name,
-                   n.email,
-                   n.phone_work,
-                   n.phone_home,
-                   n.notes,
-                   n.address,
-                   n.city,
-                   n.state,
-                   n.zip
-            from rental.name n";
+$select  = "select  distinct n.*
+            from rental.registr r
+            join rental.name    n on r.agent=n.name_num
+            left join (
+                select p.rental_id, min(p.pull_date) as earliest_pull
+                from rental.pull_history p
+                group by p.rental_id
+            ) pulls on pulls.rental_id=r.id
+            where (r.registered_date is not null or earliest_pull is not null)
+                and agent>0
+
+            union
+
+            select  distinct n.*
+            from rental.registr    r
+            join rental.regid_name l on r.id=l.id
+            join rental.name       n on l.name_num=n.name_num
+            left join (
+                select p.rental_id, min(p.pull_date) as earliest_pull
+                from rental.pull_history p
+                group by p.rental_id
+            ) pulls on pulls.rental_id=r.id
+            where (r.registered_date is not null or earliest_pull is not null)";
 $query   = $RENTAL->query($select);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
