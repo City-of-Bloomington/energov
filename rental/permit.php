@@ -9,7 +9,6 @@ declare (strict_types=1);
 $fields = [
     'permit_number',
     'permit_type',
-    'permit_sub_type',
     'permit_status',
     'apply_date',
     'issue_date',
@@ -51,7 +50,6 @@ foreach ($result as $row) {
     $insert->execute([
         'permit_number'           => $permit_number,
         'permit_type'             => 'rental',
-        'permit_sub_type'         => $row['status_text'],
         'permit_status'           => $row['inactive'] ? 'inactive' : 'active',
         'apply_date'              => $apply_date,
         'issue_date'              => $row['permit_issued'  ],
