@@ -30,7 +30,7 @@ $insert_details = $DCT->prepare("insert into permit_payment_detail ($columns) va
 
 $sql    = "select p.bid,
                   p.receipt_no,
-                  p.rec_from,
+                  p.paid_by,
                   p.check_no,
                   p.rec_sum,
                   p.rec_date,
@@ -59,7 +59,7 @@ foreach ($result as $row) {
     $insert_payment->execute([
         'payment_id'     => $payment_id,
         'receipt_number' => $row['receipt_no'],
-        'payment_method' => $row['rec_from'  ],
+        'payment_method' => $row['paid_by'   ],
         'check_number'   => $row['check_no'  ],
         'payment_amount' => $row['rec_sum'   ],
         'payment_date'   => $row['rec_date'  ]
