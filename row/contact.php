@@ -50,7 +50,7 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$sql    = "select n.*
+$sql    = "select distinct n.*
            from excavpermits     p
            join company_contacts c on c.id=p.company_contact_id
            join companies        n on n.id=c.company_id";
@@ -108,7 +108,7 @@ foreach ($result as $row) {
 }
 echo "\n";
 
-$sql    = "select n.*
+$sql    = "select distinct n.*
            from excavpermits     p
            join company_contacts c on c.id=p.company_contact_id
            join contacts         n on n.id=c.contact_id";
@@ -166,7 +166,7 @@ foreach ($result as $row) {
 }
 echo "\n";
 
-$sql    = "select n.*
+$sql    = "select distinct n.*
            from excavpermits   p
            join bonds          b on b.id=p.bond_id
            join bond_companies n on n.id=b.bond_company_id";
