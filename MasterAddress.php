@@ -15,6 +15,12 @@ class MasterAddress
         return self::doJsonRequest($url);
 	}
 
+	public static function addressInfo(int $address_id): ?array
+	{
+        $url = self::ADDRESS_SERVICE_URL."/addresses/$address_id?format=json";
+        return self::doJsonRequest($url);
+	}
+
 	/**
 	 * Creates the full street number portion from a parse response
 	 */

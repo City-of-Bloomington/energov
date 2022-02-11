@@ -15,6 +15,9 @@ $fields = [
     'street_type',
     'post_direction',
     'unit_suite_number',
+    'city',
+    'state_code',
+    'zip',
     'country_type'
 ];
 $columns = implode(',', $fields);
@@ -29,7 +32,8 @@ $sql = "select r.id,
                a.post_dir,
                a.subunit_id,
                a.sud_type,
-               a.sud_num
+               a.sud_num,
+               a.street_address_id
         from rental.registr  r
         join rental.address2 a on r.id=a.registr_id
         left join (
@@ -47,6 +51,25 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/permit_address: $percent% $row[id] => ";
     echo "$row[street_num] $row[street_dir] $row[street_name] $row[street_type] $row[sud_type] $row[sud_num]";
+
+    $city  = 'Bloomington';
+    $state = 'IN';
+    $zip   = null;
+
+    if ($row['street_address_id']) {
+        $info = MasterAddress::addressInfo((int)$row['street_address_id']);
+        if (!empty($info['address'])) {
+            $city  = $info['address']['city' ];
+            $state = $info['address']['state'];
+            $zip   = $info['address']['zip'  ];
+        }
+        else {
+            echo "$row[street_address_id] ";
+            echo "Address not found\n";
+            exit();
+        }
+    }
+
     $insert->execute([
         'permit_number'     => DATASOURCE_RENTAL."_$row[id]",
         'main_address'      => $row['subunit_id' ] ? 0 : 1,
@@ -56,6 +79,9 @@ foreach ($result as $row) {
         'street_type'       => $row['street_type'],
         'post_direction'    => $row['post_dir'   ],
         'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+        'city'              => $city,
+        'state_code'        => $state,
+        'zip'               => $zip,
         'country_type'      => COUNTRY_TYPE,
     ]);
 }
