@@ -8,7 +8,6 @@
 declare (strict_types=1);
 $fields = [
     'permit_number',
-    'main_address',
     'street_number',
     'pre_direction',
     'street_name',
@@ -72,7 +71,6 @@ foreach ($result as $row) {
 
     $insert->execute([
         'permit_number'     => DATASOURCE_RENTAL."_$row[id]",
-        'main_address'      => $row['subunit_id' ] ? 0 : 1,
         'street_number'     => $row['street_num' ],
         'pre_direction'     => $row['street_dir' ],
         'street_name'       => $row['street_name'],
