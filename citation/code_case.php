@@ -120,18 +120,20 @@ foreach ($result as $row) {
         'resolved_date'          => $row['date_complied'  ]
     ]);
 
-    $insert_address->execute([
-        'case_number'       => $case_number,
-        'street_number'     => $row['address_street_number'],
-        'pre_direction'     => $row['address_street_direction'],
-        'street_name'       => $row['address_street_name'],
-        'street_type'       => $row['address_street_type'],
-        'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
-        'city'              => $row['address_city'],
-        'state_code'        => $row['address_state'],
-        'zip'               => $row['address_zipcode'],
-        'country_type'      => COUNTRY_TYPE
-    ]);
+    if ($row['address_street_number'] && $row['address_street_name']) {
+        $insert_address->execute([
+            'case_number'       => $case_number,
+            'street_number'     => $row['address_street_number'],
+            'pre_direction'     => $row['address_street_direction'],
+            'street_name'       => $row['address_street_name'],
+            'street_type'       => $row['address_street_type'],
+            'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+            'city'              => $row['address_city'],
+            'state_code'        => $row['address_state'],
+            'zip'               => $row['address_zipcode'],
+            'country_type'      => COUNTRY_TYPE
+        ]);
+    }
 
     $amount = (float)$row['amount'];
     if ($amount > 0) {
