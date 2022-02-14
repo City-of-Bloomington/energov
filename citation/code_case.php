@@ -68,7 +68,7 @@ $sql     = "select c.id,
                    c.status,
                    c.date_writen,
                    c.compliance_date,
-                   u.fullname,
+                   u.empid,
                    v.name,
                    c.citation,
                    c.note,
@@ -105,7 +105,7 @@ foreach ($result as $row) {
         'case_status'      => $row['status'       ],
         'open_date'        => $row['date_writen'  ],
         'closed_date'      => $row['date_complied'],
-        'assigned_to_user' => $row['fullname'     ],
+        'assigned_to_user' => $row['empid'        ]
     ]);
 
     $insert_violation->execute([
@@ -117,7 +117,7 @@ foreach ($result as $row) {
         'violation_note'         => $row['note'           ],
         'citation_date'          => $row['date_writen'    ],
         'compliance_date'        => $row['compliance_date'],
-        'resolved_date'          => $row['date_complied'  ],
+        'resolved_date'          => $row['date_complied'  ]
     ]);
 
     $insert_address->execute([
