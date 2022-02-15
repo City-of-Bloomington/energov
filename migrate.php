@@ -21,6 +21,7 @@ $ROW      = db_connect($config['db']['row'    ]);
 $NOV      = db_connect($config['db']['nov'    ]);
 $DCT      = db_connect($config['db']['energov']);
 
+$DCT->query('delete from code_case_activity');
 $DCT->query('delete from code_case_violation_payment_detail');
 $DCT->query('delete from code_case_violation_fee');
 $DCT->query('delete from code_case_violation');
@@ -67,6 +68,7 @@ include './row/inspection.php';
 include './row/permit.php';
 
 include './citation/code_case.php';
+include './citation/code_case_activity.php';
 include './citation/contact.php';
 include './citation/payment.php';
 include './citation/attachment_document.php';
