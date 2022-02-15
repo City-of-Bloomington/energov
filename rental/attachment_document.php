@@ -58,7 +58,8 @@ $sql    = "select id,
                   insp_id,
                   inspection_date,
                   insp_file
-           from rental.inspections";
+           from rental.inspections
+           where insp_file is not null";
 $query  = $RENTAL->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -66,14 +67,15 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rrental/attachment inspection: $percent% $row[id]";
+    echo chr(27)."[2K\rrental/attachment inspection: $percent% $row[insp_id]";
 
     $permit_number = DATASOURCE_RENTAL."_$row[id]";
 
     $dir  = SITE_HOME.'/rental/inspections';
     $file = str_replace("\\", '/', $row['insp_file']);
+    $ext  = extension($file);
     $date = new \DateTime($row['inspection_date']);
-    $name = 'inspection_'.$date->format('Y-m-d');
+    $name = 'inspection_'.$date->format('Y-m-d').$ext;
 
     if (is_file("$dir/$file")) {
         echo " => $file";
@@ -89,3 +91,10 @@ foreach ($result as $row) {
     }
 }
 echo "\n";
+
+function extension(string $filename): string
+{
+    $matches = [];
+    preg_match('|\.[^\.]+$|', $filename, $matches);
+    return $matches[0];
+}
