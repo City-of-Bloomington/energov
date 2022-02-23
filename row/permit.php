@@ -83,6 +83,7 @@ foreach ($result as $row) {
 
     $apply_date = $row['date'      ] ?? $row['start_date'];
     $issue_date = $row['start_date'] ?? $row['date'      ];
+    if ($issue_date < $apply_date) { $apply_date = $issue_date; }
 
     $insert_permit->execute([
         'permit_type'             => 'Excavation',
