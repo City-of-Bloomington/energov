@@ -23,7 +23,8 @@ $sql     = "select i.id, i.insp_id
                 from rental.pull_history p
                 group by p.rental_id
             ) pulls on pulls.rental_id=r.id
-            where (r.registered_date is not null or earliest_pull is not null)";
+            where (r.registered_date is not null or earliest_pull is not null)
+              and i.inspection_date<sysdate";
 $query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
