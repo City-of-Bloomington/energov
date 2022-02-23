@@ -73,6 +73,8 @@ include './citation/contact.php';
 include './citation/payment.php';
 include './citation/attachment_document.php';
 
+include './de-dupe.php';
+
 function db_connect(array $config): \PDO
 {
     $pdo = new \PDO($config['dsn'], $config['user'], $config['pass'], $config['opts']);
