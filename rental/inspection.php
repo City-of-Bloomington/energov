@@ -28,7 +28,8 @@ $sql     = "select insp_id,
                    inspected_by,
                    inspection_date,
                    comments
-            from rental.inspections";
+            from rental.inspections
+            where inspection_date<sysdate";
 $query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
