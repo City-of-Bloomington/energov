@@ -26,7 +26,8 @@ $sql = "select h.id,
                h.username,
                h.pull_date
         from rental.pull_history h
-        join rental.pull_reas    r on h.pull_reason=r.p_reason";
+        join rental.pull_reas    r on h.pull_reason=r.p_reason
+        where h.pull_date<sysdate";
 $query  = $RENTAL->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
