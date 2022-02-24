@@ -73,6 +73,9 @@ include './citation/contact.php';
 include './citation/payment.php';
 include './citation/attachment_document.php';
 
+include './nov/code_case.php';
+include './nov/contact.php';
+
 include './de-dupe.php';
 
 function db_connect(array $config): \PDO

@@ -74,3 +74,4 @@ foreach ($result as $row) {
         $delete_contact  ->execute([$id]);
     }
 }
+echo "\n";
