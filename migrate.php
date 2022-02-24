@@ -12,14 +12,16 @@ define('DATASOURCE_RENTAL',   'rentpro' );
 define('DATASOURCE_ROW',      'row'     );
 define('DATASOURCE_CITATION', 'citation');
 define('DATASOURCE_NOV',      'nov'     );
+define('DATASOURCE_PLANNING', 'CZC tracking sheet');
 
 define('SITE_HOME', !empty($_SERVER['SITE_HOME']) ? $_SERVER['SITE_HOME'] : __DIR__.'/data');
 $config   = include SITE_HOME.'/config.php';
+$PLANNING = db_connect($config['db']['planning']);
 $CITATION = db_connect($config['db']['citation']);
-$RENTAL   = db_connect($config['db']['rental' ]);
-$ROW      = db_connect($config['db']['row'    ]);
-$NOV      = db_connect($config['db']['nov'    ]);
-$DCT      = db_connect($config['db']['energov']);
+$RENTAL   = db_connect($config['db']['rental'  ]);
+$ROW      = db_connect($config['db']['row'     ]);
+$NOV      = db_connect($config['db']['nov'     ]);
+$DCT      = db_connect($config['db']['energov' ]);
 
 $DCT->query('delete from code_case_activity');
 $DCT->query('delete from code_case_violation_payment_detail');
@@ -39,10 +41,10 @@ $DCT->query('delete from permit_fee');
 $DCT->query('delete from permit_activity');
 $DCT->query('delete from permit_note');
 $DCT->query('delete from permit_inspection');
+$DCT->query('delete from inspection');
 $DCT->query('delete from permit_contact');
 $DCT->query('delete from permit_address');
 $DCT->query('delete from permit');
-$DCT->query('delete from inspection');
 
 $DCT->query('delete from contact_address');
 $DCT->query('delete from contact_note');
@@ -51,10 +53,10 @@ $DCT->query('delete from contact');
 $DCT->query("dbcc checkident('attachment_document', RESEED, 0)");
 
 include './rental/contact.php';
-include './rental/inspection.php';
 include './rental/permit.php';
 include './rental/permit_address.php';
 include './rental/permit_contact.php';
+include './rental/inspection.php';
 include './rental/permit_inspection.php';
 include './rental/permit_note.php';
 include './rental/permit_activity.php';
@@ -75,6 +77,9 @@ include './citation/attachment_document.php';
 
 include './nov/code_case.php';
 include './nov/contact.php';
+
+include './planning/permit.php';
+include './planning/permit_address.php';
 
 include './de-dupe.php';
 
