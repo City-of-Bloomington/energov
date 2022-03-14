@@ -31,13 +31,6 @@ $address_fields = [
     'country_type'
 ];
 
-$case_fields = [
-    'case_number',
-    'contact_id',
-    'contact_type',
-    'primary_billing_contact'
-];
-
 $columns = implode(',', $contact_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
 $insert_contact  = $DCT->prepare("insert into contact ($columns) values($params)");
@@ -46,15 +39,7 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$columns = implode(',', $case_fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $case_fields));
-$insert_case = $DCT->prepare("insert into code_case_contact ($columns) values($params)");
-
-$sql    = "select o.*,
-                  c.cite_id
-           from owners o
-           join citation_owners c on o.id=c.owner_id";
-$query  = $NOV->query($sql);
+$query  = $NOV->query('select * from owners');
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
 $c      = 0;
@@ -64,7 +49,6 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rnov/contact: $percent% $row[id]";
 
     $contact_id  = DATASOURCE_NOV."_$row[id]";
-    $case_number = DATASOURCE_NOV."_$row[cite_id]";
 
     $insert_contact->execute([
         'contact_id'    => $contact_id,
@@ -89,13 +73,6 @@ foreach ($result as $row) {
         'state_code'        => $row['state'],
         'zip'               => $row['zip'  ],
         'country_type'      => COUNTRY_TYPE,
-    ]);
-
-    $insert_case->execute([
-        'case_number'             => $case_number,
-        'contact_id'              => $contact_id,
-        'contact_type'            => 'owner',
-        'primary_billing_contact' => 1
     ]);
 }
 echo "\n";

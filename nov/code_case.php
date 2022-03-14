@@ -69,9 +69,9 @@ $sql    = "select c.*,
                   s.name  as status,
                   u.empid as inspector
            from citations       c
-           join violation_types v on v.id=c.violation_id
-           join statuses        s on s.id=c.status_id
-           join users           u on u.id=c.inspector_id";
+           left join violation_types v on v.id=c.violation_id
+           left join statuses        s on s.id=c.status_id
+           left join users           u on u.id=c.inspector_id";
 $query  = $NOV->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);

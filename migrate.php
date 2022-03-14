@@ -75,8 +75,9 @@ include './citation/contact.php';
 include './citation/payment.php';
 include './citation/attachment_document.php';
 
-include './nov/code_case.php';
 include './nov/contact.php';
+include './nov/code_case.php';
+include './nov/code_case_contact.php';
 
 include './planning/permit.php';
 include './planning/permit_address.php';
