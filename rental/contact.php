@@ -23,12 +23,7 @@ $note_fields = [
 ];
 $address_fields = [
     'contact_id',
-    'street_number',
-    'pre_direction',
-    'street_name',
-    'street_type',
-    'post_direction',
-    'unit_suite_number',
+    'address_line_3',
     'city',
     'state_code',
     'zip',
@@ -101,15 +96,9 @@ foreach ($result as $row) {
     }
 
     if ($row['address']) {
-        $a = MasterAddress::parseAddress($row['address']);
         $data = [
             'contact_id'        => $contact_id,
-            'street_number'     => MasterAddress::streetNumber($a),
-            'pre_direction'     => $a['direction'    ] ?? '',
-            'street_name'       => $a['street_name'  ] ?? '',
-            'street_type'       => $a['streetType'   ] ?? '',
-            'post_direction'    => $a['postDirection'] ?? '',
-            'unit_suite_number' => MasterAddress::subunit($a),
+            'address_line_3'    => $row['address'],
             'city'              => $row['city' ],
             'state_code'        => $row['state'],
             'zip'               => $row['zip'  ],
