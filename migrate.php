@@ -62,7 +62,7 @@ include './rental/permit_note.php';
 include './rental/permit_activity.php';
 include './rental/permit_fee.php';
 include './rental/payment.php';
-include './rental/attachment_document.php';
+// include './rental/attachment_document.php';
 
 include './row/contact.php';
 include './row/bond.php';
@@ -73,7 +73,7 @@ include './citation/code_case.php';
 include './citation/code_case_activity.php';
 include './citation/contact.php';
 include './citation/payment.php';
-include './citation/attachment_document.php';
+// include './citation/attachment_document.php';
 
 include './nov/contact.php';
 include './nov/code_case.php';
