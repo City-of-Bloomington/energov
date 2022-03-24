@@ -31,13 +31,6 @@ $address_fields = [
     'country_type'
 ];
 
-$case_fields = [
-    'case_number',
-    'contact_id',
-    'contact_type',
-    'primary_billing_contact'
-];
-
 $columns = implode(',', $contact_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
 $insert_contact  = $DCT->prepare("insert into contact ($columns) values($params)");
@@ -46,14 +39,9 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$columns = implode(',', $case_fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $case_fields));
-$insert_case = $DCT->prepare("insert into code_case_contact ($columns) values($params)");
-
-$sql    = "select c.id as cite_id, a.*
-           from citations       c
-           join citation_agents l on c.id=l.cite_id
-           join agents          a on a.id=l.agent_id";
+$sql    = "select distinct a.*
+           from agents a
+           join citation_agents c on a.id=c.agent_id";
 $query  = $CITATION->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -64,7 +52,6 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rcitation/contact agents: $percent% $row[id]";
 
     $contact_id  = DATASOURCE_CITATION."_agent_$row[id]";
-    $case_number = DATASOURCE_CITATION."_$row[cite_id]";
 
     $insert_contact->execute([
         'contact_id'    => $contact_id,
@@ -90,20 +77,12 @@ foreach ($result as $row) {
         'zip'               => $row['zip'  ],
         'country_type'      => COUNTRY_TYPE,
     ]);
-
-    $insert_case->execute([
-        'case_number'             => $case_number,
-        'contact_id'              => $contact_id,
-        'contact_type'            => 'agent',
-        'primary_billing_contact' => 0
-    ]);
 }
 echo "\n";
 
-$sql    = "select c.id as cite_id, o.*
-           from citations       c
-           join citation_owners l on c.id=l.cite_id
-           join owners          o on o.id=l.owner_id";
+$sql    = "select distinct o.*
+           from owners o
+           join citation_owners c on o.id=c.owner_id";
 $query  = $CITATION->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -114,7 +93,6 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rcitation/contact owners: $percent% $row[id]";
 
     $contact_id  = DATASOURCE_CITATION."_owner_$row[id]";
-    $case_number = DATASOURCE_CITATION."_$row[cite_id]";
 
     $insert_contact->execute([
         'contact_id'    => $contact_id,
@@ -139,13 +117,6 @@ foreach ($result as $row) {
         'state_code'        => $row['state'],
         'zip'               => $row['zip'  ],
         'country_type'      => COUNTRY_TYPE,
-    ]);
-
-    $insert_case->execute([
-        'case_number'             => $case_number,
-        'contact_id'              => $contact_id,
-        'contact_type'            => 'owner',
-        'primary_billing_contact' => 1
     ]);
 }
 echo "\n";
