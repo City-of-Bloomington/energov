@@ -23,6 +23,8 @@ $ROW      = db_connect($config['db']['row'     ]);
 $NOV      = db_connect($config['db']['nov'     ]);
 $DCT      = db_connect($config['db']['energov' ]);
 
+$DCT->query('delete from plan_address');
+$DCT->query('delete from plan_case');
 $DCT->query('delete from code_case_activity');
 $DCT->query('delete from code_case_violation_payment_detail');
 $DCT->query('delete from code_case_violation_fee');
