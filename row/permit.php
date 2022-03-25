@@ -18,12 +18,12 @@ $permit_fields = [
     'legacy_data_source_name'
 ];
 
-$fee_fields = [
-    'permit_fee_id',
-    'permit_number',
-    'fee_amount',
-    'fee_date'
-];
+// $fee_fields = [
+//     'permit_fee_id',
+//     'permit_number',
+//     'fee_amount',
+//     'fee_date'
+// ];
 
 $bond_fields = [
     'permit_number',
@@ -41,9 +41,9 @@ $columns = implode(',', $permit_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $permit_fields));
 $insert_permit = $DCT->prepare("insert into permit ($columns) values($params)");
 
-$columns = implode(',', $fee_fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
-$insert_fee = $DCT->prepare("insert into permit_fee ($columns) values($params)");
+// $columns = implode(',', $fee_fields);
+// $params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
+// $insert_fee = $DCT->prepare("insert into permit_fee ($columns) values($params)");
 
 $columns = implode(',', $bond_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $bond_fields));
@@ -97,16 +97,16 @@ foreach ($result as $row) {
         'legacy_data_source_name' => DATASOURCE_ROW
     ]);
 
-    $fee_id     = DATASOURCE_ROW."_$row[id]";
-    $fee_amount = (float)$row['fee'];
-    if ($fee_amount > 0) {
-        $insert_fee->execute([
-            'permit_fee_id' => $fee_id,
-            'permit_number' => $row['permit_num'],
-            'fee_amount'    => $fee_amount,
-            'fee_date'      => $row['date']
-        ]);
-    }
+//     $fee_id     = DATASOURCE_ROW."_$row[id]";
+//     $fee_amount = (float)$row['fee'];
+//     if ($fee_amount > 0) {
+//         $insert_fee->execute([
+//             'permit_fee_id' => $fee_id,
+//             'permit_number' => $row['permit_num'],
+//             'fee_amount'    => $fee_amount,
+//             'fee_date'      => $row['date']
+//         ]);
+//     }
 
     if ((int)$row['bond_id'] > 0
           && $row['bond_num']

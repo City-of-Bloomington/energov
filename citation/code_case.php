@@ -40,12 +40,12 @@ $address_fields = [
     'country_type'
 ];
 
-$fee_fields = [
-    'code_case_violation_fee_id',
-    'violation_number',
-    'fee_amount',
-    'fee_date'
-];
+// $fee_fields = [
+//     'code_case_violation_fee_id',
+//     'violation_number',
+//     'fee_amount',
+//     'fee_date'
+// ];
 
 $columns = implode(',', $case_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $case_fields));
@@ -59,9 +59,9 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address  = $DCT->prepare("insert into code_case_address ($columns) values($params)");
 
-$columns = implode(',', $fee_fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
-$insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
+// $columns = implode(',', $fee_fields);
+// $params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
+// $insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
 
 
 $sql     = "select c.id,
@@ -135,14 +135,14 @@ foreach ($result as $row) {
         ]);
     }
 
-    $amount = (float)$row['amount'];
-    if ($amount > 0) {
-        $insert_fee->execute([
-            'code_case_violation_fee_id' => $fee_id,
-            'violation_number'           => $violation_number,
-            'fee_amount'                 => $amount,
-            'fee_date'                   => $row['date_writen']
-        ]);
-    }
+//     $amount = (float)$row['amount'];
+//     if ($amount > 0) {
+//         $insert_fee->execute([
+//             'code_case_violation_fee_id' => $fee_id,
+//             'violation_number'           => $violation_number,
+//             'fee_amount'                 => $amount,
+//             'fee_date'                   => $row['date_writen']
+//         ]);
+//     }
 }
 echo "\n";
