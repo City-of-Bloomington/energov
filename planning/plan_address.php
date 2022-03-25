@@ -7,7 +7,7 @@
  */
 declare (strict_types=1);
 $fields = [
-    'permit_number',
+    'plan_number',
     'street_number',
     'pre_direction',
     'street_name',
@@ -19,12 +19,12 @@ $fields = [
 ];
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
-$insert  = $DCT->prepare("insert permit_address ($columns) values($params)");
+$insert  = $DCT->prepare("insert plan_address ($columns) values($params)");
 
 $sql    = "select a.*
            from permit_addresses a
            join permits          p on p.id=a.permit_id
-           where permit_type!='Zoning Verification Letter'";
+           where permit_type='Zoning Verification Letter'";
 $query  = $PLANNING->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -32,10 +32,10 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rplanning/permit_address: $percent% $row[permit_id]";
+    echo chr(27)."[2K\rplanning/plan_address: $percent% $row[permit_id]";
 
     $insert->execute([
-        'permit_number'     => $row['permit_number'],
+        'plan_number'       => $row['permit_number'],
         'street_number'     => $row['street_number'],
         'pre_direction'     => $row['pre_direction'],
         'street_name'       => $row['street_name'  ],

@@ -81,6 +81,8 @@ include './nov/code_case_contact.php';
 
 include './planning/permit.php';
 include './planning/permit_address.php';
+include './planning/plan_case.php';
+include './planning/plan_address.php';
 
 include './de-dupe.php';
 

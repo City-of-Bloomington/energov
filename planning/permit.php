@@ -22,7 +22,7 @@ $columns = implode(',', $permit_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $permit_fields));
 $insert_permit = $DCT->prepare("insert into permit ($columns) values($params)");
 
-$sql    = 'select * from permits';
+$sql    = "select * from permits where permit_type!='Zoning Verification Letter'";
 $query  = $PLANNING->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
