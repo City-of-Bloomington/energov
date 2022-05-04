@@ -6,7 +6,7 @@
  * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
-$fields = [
+$inspection_fields = [
     'inspection_number',
     'inspection_type',
     'inspection_status',
@@ -18,18 +18,49 @@ $fields = [
     'comment'
 ];
 
-$columns = implode(',', $fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $fields));
-$insert  = $DCT->prepare("insert into inspection ($columns) values($params)");
+$additional_fields = [
+    'inspection_number',
+    'Unit',
+    'NumberOfBedrooms',
+    'NumberOfBathrooms',
+    'OccupancyLoad',
+    'SmokeDetectors',
+    'NumberOfStories'
+];
 
-$sql     = "select insp_id,
-                   inspection_type,
-                   time_status,
-                   inspected_by,
-                   inspection_date,
-                   comments
-            from rental.inspections
-            where inspection_date<sysdate";
+$columns = implode(',', $inspection_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $inspection_fields));
+$insert_inspection = $DCT->prepare("insert into inspection ($columns) values($params)");
+
+$columns = implode(',', $additional_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $additional_fields));
+$insert_additional = $DCT->prepare("insert into inspection_additional_fields ($columns) values($params)");
+
+$sql     = "select i.insp_id,
+                   i.inspection_type,
+                   i.time_status,
+                   i.inspected_by,
+                   i.inspection_date,
+                   i.comments,
+                   i.story_cnt,
+                   i.smook_detectors,
+                   r.bath_count,
+                   sum(u.bedrooms) as bedrooms,
+                   sum(u.occload)  as occload
+            from      rental.inspections       i
+                join rental.registr           r on r.id=i.id
+            left join rental.rental_structures s on r.id=s.rid
+            left join rental.rental_units      u on u.sid=s.id
+            where inspection_date<sysdate
+            group by i.insp_id,
+                     i.inspection_type,
+                     i.time_status,
+                     i.inspected_by,
+                     i.inspection_date,
+                     i.comments,
+                     i.story_cnt,
+                     i.smook_detectors,
+                     r.bath_count";
 $query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
@@ -39,8 +70,10 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/inspection: $percent% $row[insp_id]";
 
-    $insert->execute([
-        'inspection_number'    => DATASOURCE_RENTAL."_$row[insp_id]",
+    $inspection_number = DATASOURCE_RENTAL."_$row[insp_id]";
+
+    $insert_inspection->execute([
+        'inspection_number'    => $inspection_number,
         'inspection_type'      => $row['inspection_type'],
         'inspection_status'    => $row['time_status'    ],
         'completed'            => 1,
@@ -49,6 +82,16 @@ foreach ($result as $row) {
         'inspected_date_start' => $row['inspection_date'],
         'inspected_date_end'   => $row['inspection_date'],
         'comment'              => $row['comments'       ]
+    ]);
+
+    $insert_additional->execute([
+        'inspection_number' => $inspection_number,
+        'Unit'              => null,
+        'NumberOfBedrooms'  => $row['bedrooms'       ],
+        'NumberOfBathrooms' => $row['bath_count'     ],
+        'OccupancyLoad'     => $row['occload'        ],
+        'SmokeDetectors'    => $row['smook_detectors'],
+        'NumberOfStories'   => $row['story_cnt'      ]
     ]);
 }
 echo "\n";

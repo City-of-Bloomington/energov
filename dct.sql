@@ -145,6 +145,16 @@ create table inspection (
     legacy_data_source_name varchar(200) not null
 );
 
+create table inspection_additional_fields (
+    inspection_number	 varchar(100) not null primary key,
+    Unit                 varchar(32),
+    NumberOfBedrooms     int,
+    NumberOfBathrooms    numeric(3,1),
+    OccupancyLoad        int,
+    SmokeDetectors       int,
+    NumberOfStories      int
+);
+
 create table permit_inspection (
     permit_number     varchar(100) not null,
     inspection_number varchar(100) not null,
@@ -318,3 +328,4 @@ create table code_case_violation_payment_detail (
     foreign key (code_case_violation_fee_id) references code_case_violation_fee(code_case_violation_fee_id),
     foreign key (payment_id) references payment(payment_id)
 );
+
