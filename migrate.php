@@ -69,7 +69,8 @@ include './rental/permit_activity.php';
 
 include './row/contact.php';
 include './row/bond.php';
-include './row/inspection.php';
+// include './row/inspection.php';
+// include './row/permit_inspection.php';
 include './row/permit.php';
 
 include './citation/code_case.php';
