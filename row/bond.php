@@ -6,6 +6,8 @@
  * @param $DCT  PDO connection to DCT database
  */
 declare (strict_types=1);
+define('CITY_OF_BLOOMINGTON', DATASOURCE_ROW.'_bond_companies_234');
+
 $bond_fields = [
     'bond_id',
     'bond_number',
@@ -82,9 +84,9 @@ foreach ($result as $row) {
         'bond_status'          => $row['status'     ],
         'expire_date'          => $row['expire_date'],
         'amount'               => $row['amount'     ],
-        'obligee_contact_id'   => $company_id,
-        'principal_contact_id' => $person_id,
-        'surety_contact_id'    => $bond_company_id,
+        'obligee_contact_id'   => CITY_OF_BLOOMINGTON,
+        'principal_contact_id' => $bond_company_id,
+        'surety_contact_id'    => $company_id,
     ]);
 
     if ($row['description']) {
