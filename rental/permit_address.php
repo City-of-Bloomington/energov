@@ -4,9 +4,10 @@
  * @license https://www.gnu.org/licenses/agpl.txt GNU/AGPL, see LICENSE
  * @param $RENTAL PDO connection to rental database
  * @param $DCT    PDO connection to DCT database
+ * @param $ARCGIS ArcGIS rest api connection
  */
 declare (strict_types=1);
-$fields = [
+$address_fields = [
     'permit_number',
     'street_number',
     'pre_direction',
@@ -19,9 +20,23 @@ $fields = [
     'zip',
     'country_type'
 ];
-$columns = implode(',', $fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $fields));
-$insert  = $DCT->prepare("insert permit_address ($columns) values($params)");
+
+$parcel_fields = [
+    'permit_number',
+    'parcel_number'
+];
+$columns = implode(',', $address_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
+$insert_address = $DCT->prepare("insert permit_address ($columns) values($params)");
+
+$sql = "insert into parcel (parcel_number)
+        select ?
+        where not exists (select parcel_number from parcel where parcel_number=?)";
+$insert_parcel  = $DCT->prepare($sql);
+
+$columns = implode(',', $parcel_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $parcel_fields));
+$insert_permit = $DCT->prepare("insert permit_parcel ($columns) values($params)");
 
 $sql = "select r.id,
                a.street_num,
@@ -55,6 +70,8 @@ foreach ($result as $row) {
     $state = 'IN';
     $zip   = null;
 
+    $permit_number = DATASOURCE_RENTAL."_$row[id]";
+
     if ($row['street_address_id']) {
         $info = MasterAddress::addressInfo((int)$row['street_address_id']);
         if (!empty($info['address'])) {
@@ -69,8 +86,8 @@ foreach ($result as $row) {
         }
     }
 
-    $insert->execute([
-        'permit_number'     => DATASOURCE_RENTAL."_$row[id]",
+    $insert_address->execute([
+        'permit_number'     => $permit_number,
         'street_number'     => $row['street_num' ],
         'pre_direction'     => $row['street_dir' ],
         'street_name'       => $row['street_name'],
@@ -82,5 +99,22 @@ foreach ($result as $row) {
         'zip'               => $zip,
         'country_type'      => COUNTRY_TYPE,
     ]);
+    if (   !empty($info['address']['state_plane_x'])
+        && !empty($info['address']['state_plane_y'])) {
+        $parcels = $ARCGIS->parcels('/Energov/EnergovData/MapServer/1',
+                                   (int)$info['address']['state_plane_x'],
+                                   (int)$info['address']['state_plane_y']);
+        if ($parcels) {
+            foreach ($parcels as $p) {
+                if (!empty($p['pin_18'])) {
+                    $insert_parcel->execute([$p['pin_18'], $p['pin_18']]);
+                    $insert_permit->execute([
+                        'permit_number' => $permit_number,
+                        'parcel_number' => $p['pin_18']
+                    ]);
+                }
+            }
+        }
+    }
 }
 echo "\n";

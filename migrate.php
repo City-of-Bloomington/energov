@@ -4,6 +4,7 @@
  * @license https://www.gnu.org/licenses/agpl.txt GNU/AGPL, see LICENSE
  */
 declare (strict_types=1);
+include './ArcGIS.php';
 include './MasterAddress.php';
 
 define('COUNTRY_TYPE', 'US');
@@ -22,6 +23,7 @@ $RENTAL   = db_connect($config['db']['rental'  ]);
 $ROW      = db_connect($config['db']['row'     ]);
 $NOV      = db_connect($config['db']['nov'     ]);
 $DCT      = db_connect($config['db']['energov' ]);
+$ARCGIS   = new ArcGIS($config['api']['arcgis']);
 
 $DCT->query('delete from plan_address');
 $DCT->query('delete from plan_case');
@@ -46,6 +48,7 @@ $DCT->query('delete from permit_inspection');
 $DCT->query('delete from inspection_additional_fields');
 $DCT->query('delete from inspection');
 $DCT->query('delete from permit_contact');
+$DCT->query('delete from permit_parcel');
 $DCT->query('delete from permit_address');
 $DCT->query('delete from permit');
 

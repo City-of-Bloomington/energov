@@ -25,11 +25,14 @@ class ArcGIS
     }
 
     /**
+     * May return more than one parcel for given coordinates
+     *
      * @param string $resource  Path to resource in REST service
      * @param int    $x         State Plane X
      * @param int    $y         State Plane y
+     * @return array  An array of parcels
      */
-    public function parcelInfo(string $resource, int $x, int $y): ?array
+    public function parcels(string $resource, int $x, int $y): ?array
     {
         $url = $this->server.$resource.'/query?'.http_build_query([
             'geometryType'   => 'esriGeometryPoint',
@@ -44,10 +47,11 @@ class ArcGIS
         if ($res) {
             $json = json_decode($res, true);
             if (!empty($json['features'])) {
-                if (count($json['features']) > 1) {
-                    throw new \Exception('More than one parcel found');
+                $out = [];
+                foreach ($json['features'] as $parcel) {
+                    $out[] = $parcel['attributes'];
                 }
-                return $json['features'][0]['attributes'];
+                return $out;
             }
         }
         return null;
