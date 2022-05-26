@@ -16,9 +16,30 @@ $fields = [
     'legacy_data_source_name'
 ];
 
+$custom_fields = [
+    'permit_number',
+    'Units',
+    'NumberOfBedrooms',
+    'OccupancyLoad',
+    'SleepRooms'
+];
+
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit ($columns) values($params)");
+
+$columns = implode(',', $custom_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $custom_fields));
+$insert_custom = $DCT->prepare("insert into PERMIT_TABLE_custom_fields ($columns) values($params)");
+
+$sql          = "select u.units,
+                        u.bedrooms,
+                        u.occload,
+                        case when u.sleeproom is not null then 1 else null end as sleeproom
+                 from rental.rental_structures s
+                 join rental.rental_units      u on s.id=u.sid
+                 where s.rid=?";
+$select_units = $RENTAL->prepare($sql);
 
 $sql = "select  r.id,
                 s.status_text,
@@ -56,5 +77,17 @@ foreach ($result as $row) {
         'expire_date'             => $row['permit_expires' ],
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ]);
+
+    $select_units->execute([$row['id']]);
+    $units = $select_units->fetchAll(\PDO::FETCH_ASSOC);
+    foreach ($units as $u) {
+        $insert_custom->execute([
+            'permit_number'     => $permit_number,
+            'Units'             => $u['units'    ],
+            'NumberOfBedrooms'  => $u['bedrooms' ],
+            'OccupancyLoad'     => $u['occload'  ],
+            'SleepRooms'        => $u['sleeproom']
+        ]);
+    }
 }
 echo "\n";

@@ -126,6 +126,15 @@ create table permit_activity (
     foreign key (permit_number) references permit(permit_number)
 );
 
+create table PERMIT_TABLE_custom_fields (
+    permit_number varchar(100) not null,
+    Units                int,
+    NumberOfBedrooms     int,
+    OccupancyLoad        int,
+    SleepRooms           bit
+    foreign key (permit_number) references permit(permit_number)
+);
+
 create table inspection (
     inspection_number	    varchar(100) not null primary key,
     inspection_type	        varchar(100),
@@ -143,16 +152,6 @@ create table inspection (
     comment                 varchar(1024),
     inspection_case_number	varchar(100),
     legacy_data_source_name varchar(200) not null
-);
-
-create table inspection_additional_fields (
-    inspection_number	 varchar(100) not null primary key,
-    Unit                 varchar(32),
-    NumberOfBedrooms     int,
-    NumberOfBathrooms    numeric(3,1),
-    OccupancyLoad        int,
-    SmokeDetectors       int,
-    NumberOfStories      int
 );
 
 create table permit_inspection (
