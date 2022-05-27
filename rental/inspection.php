@@ -18,16 +18,26 @@ $inspection_fields = [
     'comment'
 ];
 
+$additional_fields = [
+    'inspection_number',
+    'Affidavit'
+];
+
 $columns = implode(',', $inspection_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $inspection_fields));
 $insert_inspection = $DCT->prepare("insert into inspection ($columns) values($params)");
+
+$columns = implode(',', $additional_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $additional_fields));
+$insert_additional = $DCT->prepare("insert into inspection_additional_fields ($columns) values($params)");
 
 $sql     = "select i.insp_id,
                    i.inspection_type,
                    i.time_status,
                    i.inspected_by,
                    i.inspection_date,
-                   i.comments
+                   i.comments,
+                   i.has_affidavit
             from rental.inspections i";
 $query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -51,5 +61,12 @@ foreach ($result as $row) {
         'inspected_date_end'   => $row['inspection_date'],
         'comment'              => $row['comments'       ]
     ]);
+
+    if ($row['has_affidavit'] == 'Yes') {
+        $insert_additional->execute([
+            'inspection_number' => $inspection_number,
+            'Affidavit'         => 1
+        ]);
+    }
 }
 echo "\n";

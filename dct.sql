@@ -165,6 +165,12 @@ create table inspection (
     legacy_data_source_name varchar(200) not null
 );
 
+create table inspection_additional_fields (
+    inspection_number       varchar(100),
+    Affidavit               bit,
+    foreign key (inspection_number) references inspection(inspection_number)
+);
+
 create table permit_inspection (
     permit_number     varchar(100) not null,
     inspection_number varchar(100) not null,
