@@ -40,20 +40,27 @@ $insert  = $DCT->prepare("insert into permit ($columns) values($params)");
 
 $columns = implode(',', $additional_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $additional_fields));
-$insert_additional  = $DCT->prepare("insert into permit ($columns) values($params)");
+$insert_additional  = $DCT->prepare("insert into permit_additional_fields ($columns) values($params)");
 
 $columns = implode(',', $custom_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $custom_fields));
 $insert_custom = $DCT->prepare("insert into PERMIT_TABLE_custom_fields ($columns) values($params)");
 
-$sql          = "select u.units,
-                        u.bedrooms,
-                        u.occload,
-                        case when u.sleeproom is not null then 1 else null end as sleeproom
-                 from rental.rental_structures s
-                 join rental.rental_units      u on s.id=u.sid
-                 where s.rid=?";
+$sql = "select u.units,
+               u.bedrooms,
+               u.occload,
+               case when u.sleeproom is not null then 1 else null end as sleeproom
+        from rental.rental_structures s
+        join rental.rental_units      u on s.id=u.sid
+        where s.rid=?";
 $select_units = $RENTAL->prepare($sql);
+
+$sql = "select insp_id, foundation, heat_src, story_cnt,
+               case when attic='Yes' then 1 else null end as attic
+        from rental.inspections
+        where id=? and rownum=1
+        order by inspection_date desc";
+$select_inspections = $RENTAL->prepare($sql);
 
 $sql = "select  r.id,
                 s.status_text,
@@ -94,15 +101,22 @@ foreach ($result as $row) {
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ]);
 
-    $insert_additional->execute([
+
+    $select_inspections->execute([$row['id']]);
+    $inspections = $select_inspections->fetchAll(\PDO::FETCH_ASSOC);
+
+    $a = [
         'permit_number'  => $permit_number,
-        'Stories'        => $row[''],
-        'Foundation'     => $row[''],
-        'Heat'           => $row[''],
-        'Attic'          => $row[''],
+        'Stories'        => $inspections[0]['story_cnt' ] ?? null,
+        'Foundation'     => $inspections[0]['foundation'] ?? null,
+        'Heat'           => $inspections[0]['heat_src'  ] ?? null,
+        'Attic'          => $inspections[0]['attic'     ] ?? null,
         'Accessory'      => $row['affordable'],
         'Affordable'     => $row['accessory_dwelling'],
-    ]);
+    ];
+    if ($a['Stories'] || $a['Foundation'] || $a['Heat'] || $a['Attic'] || $a['Affordable']) {
+        $insert_additional->execute($a);
+    }
 
     $select_units->execute([$row['id']]);
     $units = $select_units->fetchAll(\PDO::FETCH_ASSOC);
