@@ -126,6 +126,17 @@ create table permit_activity (
     foreign key (permit_number) references permit(permit_number)
 );
 
+create table permit_additional_fields (
+    permit_number varchar(100) not null,
+    Stories       int,
+    Foundation    varchar(100),
+    Heat          varchar(100),
+    Attic         bit,
+    Affordable    bit,
+    Accessory     bit
+    foreign key (permit_number) references permit(permit_number)
+);
+
 create table PERMIT_TABLE_custom_fields (
     permit_number varchar(100) not null,
     Units                int,

@@ -16,6 +16,16 @@ $fields = [
     'legacy_data_source_name'
 ];
 
+$additional_fields = [
+    'permit_number',
+    'Stories',
+    'Foundation',
+    'Heat',
+    'Attic',
+    'Accessory',
+    'Affordable'
+];
+
 $custom_fields = [
     'permit_number',
     'Units',
@@ -27,6 +37,10 @@ $custom_fields = [
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit ($columns) values($params)");
+
+$columns = implode(',', $additional_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $additional_fields));
+$insert_additional  = $DCT->prepare("insert into permit ($columns) values($params)");
 
 $columns = implode(',', $custom_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $custom_fields));
@@ -47,6 +61,8 @@ $sql = "select  r.id,
                 r.registered_date,
                 r.permit_issued,
                 r.permit_expires,
+                case when r.accessory_dwelling is not null then 1 else null end as accessory_dwelling,
+                case when r.affordable         is not null then 1 else null end as affordable,
                 pulls.earliest_pull
         from rental.registr r
         join rental.prop_status s on r.property_status=s.status
@@ -76,6 +92,16 @@ foreach ($result as $row) {
         'issue_date'              => $row['permit_issued'  ],
         'expire_date'             => $row['permit_expires' ],
         'legacy_data_source_name' => DATASOURCE_RENTAL,
+    ]);
+
+    $insert_additional->execute([
+        'permit_number'  => $permit_number,
+        'Stories'        => $row[''],
+        'Foundation'     => $row[''],
+        'Heat'           => $row[''],
+        'Attic'          => $row[''],
+        'Accessory'      => $row['affordable'],
+        'Affordable'     => $row['accessory_dwelling'],
     ]);
 
     $select_units->execute([$row['id']]);
