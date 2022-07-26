@@ -6,29 +6,8 @@
  * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
-$fee_fields = [
-    'permit_fee_id',
-    'permit_number',
-    'fee_amount',
-    'fee_date'
-];
-
-$adjustment_fields = [
-    'permit_fee_adjustment_id',
-    'permit_fee_id',
-    'adjustment_type',
-    'adjustment_amount'
-];
-
-$columns = implode(',', $fee_fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
-$insert_fee = $DCT->prepare("insert into permit_fee ($columns) values($params)");
-
-$columns = implode(',', $adjustment_fields);
-$params  = implode(',', array_map(fn($f): string => ":$f", $adjustment_fields));
-$insert_adjustment = $DCT->prepare("insert into permit_fee_adjustment ($columns) values($params)");
-
-$sql     = "select b.*
+$sql     = "select b.*,
+                   r.prop_type
             from rental.registr   r
             join rental.reg_bills b on r.id=b.id
             left join (
@@ -46,37 +25,64 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/permit_fee: $percent% $row[bid]";
 
-    $permit_fee_id = DATASOURCE_RENTAL."_$row[bid]";
     $permit_number = DATASOURCE_RENTAL."_$row[id]";
-
-    $fee_amount = (((int)$row[    'bul_rate'] * (int)$row[    'bul_cnt'])
-                 + ((int)$row[   'unit_rate'] * (int)$row[   'unit_cnt'])
-                 + ((int)$row[   'bath_rate'] * (int)$row[   'bath_cnt'])
-                 + ((int)$row[ 'noshow_rate'] * (int)$row[ 'noshow_cnt'])
-                 + ((int)$row[ 'reinsp_rate'] * (int)$row[ 'reinsp_cnt'])
-                 + ((int)$row['summary_rate'] * (int)$row['summary_cnt'])
-                 + ((int)$row[    'idl_rate'] * (int)$row[    'idl_cnt'])
-                 +  (int)$row[ 'bhqa_fine'  ]
-                 +  (int)$row[ 'other_fee'  ]
-                 +  (int)$row['other_fee2'  ]);
-
-    $insert_fee->execute([
-        'permit_fee_id' => $permit_fee_id,
-        'permit_number' => $permit_number,
-        'fee_amount'    => $fee_amount,
-        'fee_date'      => $row['issue_date']
-    ]);
-
-    $credit = (int)$row['credit'];
-    if ($credit) {
-        $adjustment_id = $permit_fee_id;
-
-        $insert_adjustment->execute([
-            'permit_fee_adjustment_id' => $adjustment_id,
-            'permit_fee_id'            => $permit_fee_id,
-            'adjustment_type'          => 'credit',
-            'adjustment_amount'        => $credit,
-        ]);
-    }
+    $fees          = computeFees($row);
 }
 echo "\n";
+
+function computeFees(array $bill): array
+{
+    $total = 0;
+
+    if (!$bill['appeal']) {
+        $uc = 0;
+        $insp_fee = $bill['bul_cnt'] * $bill['bul_rate'];
+        if ($bill['prop_type'] == 'Rooming House') {
+            $uc        =  (int)$bill['bath_cnt'];
+            $insp_fee += $uc * $bill['bath_rate'];
+        }
+        else {
+            $uc        =  (int)$bill['unit_cnt'];
+            $insp_fee += $uc * $bill['unit_rate'];
+        }
+
+        $noshow_fee =   (int)$bill['noshow_cnt'] * (float)$bill['noshow_rate'];
+        $reinsp_fee =   (int)$bill['reinsp_cnt'] * (float)$bill['reinsp_rate'];
+        $total     += (float)$bill['bhqa_fine'];
+
+        $summary_fee = 0;
+        if ($bill['summary_flag']) {
+            $summary_cnt = (int)$bill['summary_cnt'];
+            $summary_fee = $summary_cnt
+                         ? ($summary_cnt * (float)$bill['summary_rate'])
+                         : ($uc          * (float)$bill['summary_rate']);
+        }
+
+        $idl_fee = 0;
+        if ($bill['idl_flag']) {
+            $idl_cnt = (int)$bill['idl_cnt'];
+            $idl_fee = $idl_cnt
+                     ? ($idl_cnt * (float)$bill['idl_rate'])
+                     : ($uc      * (float)$bill['idl_rate']);
+        }
+        $other_total = (float)$bill['other_fee'] + (float)$bill['other_fee2'];
+        $total  += $insp_fee
+                +  $noshow_fee
+                +  $reinsp_fee
+                +  $summary_fee
+                +  $idl_fee
+                +  $other_total
+                -  (float)$bill['credit'];
+    }
+    else { // appeal
+        $total = (float)$bill['appeal_fee'];
+    }
+
+    global $RENTAL;
+    $query = $RENTAL->prepare('select sum(rec_sum) from rental.reg_paid where bid=?');
+    $query->execute([$bill['bid']]);
+    $paidSum = (float)$query->fetchColumn();
+
+    $balance = $total - $paidSum;
+    return ['balance' => $balance, 'total' => $total];
+}
