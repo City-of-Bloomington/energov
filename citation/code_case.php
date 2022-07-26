@@ -29,6 +29,7 @@ $violation_fields = [
 
 $address_fields = [
     'case_number',
+    'address_type',
     'street_number',
     'pre_direction',
     'street_name',
@@ -123,6 +124,7 @@ foreach ($result as $row) {
     if ($row['address_street_number'] && $row['address_street_name']) {
         $insert_address->execute([
             'case_number'       => $case_number,
+            'address_type'      => 'Location',
             'street_number'     => $row['address_street_number'],
             'pre_direction'     => $row['address_street_direction'],
             'street_name'       => $row['address_street_name'],
