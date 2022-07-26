@@ -25,7 +25,7 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rcitation/code_case_contect agents: $percent% $row[agent_id]";
+    echo chr(27)."[2K\rcitation/code_case_contact agents: $percent% $row[agent_id]";
 
     $contact_id  = DATASOURCE_CITATION."_agent_$row[agent_id]";
     $case_number = DATASOURCE_CITATION."_$row[cite_id]";
@@ -47,7 +47,7 @@ $c      = 0;
 foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
-    echo chr(27)."[2K\rcitation/code_case_contect owners: $percent% $row[owner_id]";
+    echo chr(27)."[2K\rcitation/code_case_contact owners: $percent% $row[owner_id]";
 
     $contact_id  = DATASOURCE_CITATION."_owner_$row[owner_id]";
     $case_number = DATASOURCE_CITATION."_$row[cite_id]";
