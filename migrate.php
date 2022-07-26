@@ -81,6 +81,7 @@ include './row/permit.php';
 include './citation/code_case.php';
 include './citation/code_case_activity.php';
 include './citation/contact.php';
+include './citation/code_case_contact.php';
 // include './citation/payment.php';
 // include './citation/attachment_document.php';
 
