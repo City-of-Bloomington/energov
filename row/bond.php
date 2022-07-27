@@ -85,8 +85,8 @@ foreach ($result as $row) {
         'expire_date'          => $row['expire_date'],
         'amount'               => $row['amount'     ],
         'obligee_contact_id'   => CITY_OF_BLOOMINGTON,
-        'principal_contact_id' => $bond_company_id,
-        'surety_contact_id'    => $company_id,
+        'principal_contact_id' => $company_id,
+        'surety_contact_id'    => $bond_company_id,
     ]);
 
     if ($row['description']) {
