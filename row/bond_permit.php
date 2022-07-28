@@ -34,7 +34,7 @@ $sql    = "select c.company_id,
                   max(b.expire_date) as expires,
                   case when max(b.expire_date)<now() then 'Expired' else 'Issued' end as status
            from company_contacts  c
-               join bonds        b on c.id=b.company_contact_id
+                join bonds        b on c.id=b.company_contact_id
            left join excavpermits p on b.id=p.bond_id
            where c.company_id is not null
            group by c.company_id";
@@ -75,7 +75,7 @@ $sql = "select c.contact_id,
                max(b.expire_date) as expires,
                case when max(b.expire_date)<now() then 'Expired' else 'Issued' end as status
         from company_contacts  c
-            join bonds        b on c.id=b.company_contact_id
+             join bonds        b on c.id=b.company_contact_id
         left join excavpermits p on b.id=p.bond_id
         where c.company_id is null
         group by c.contact_id";

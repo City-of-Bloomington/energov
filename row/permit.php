@@ -18,6 +18,11 @@ $permit_fields = [
     'legacy_data_source_name'
 ];
 
+$parent_fields = [
+    'permit_number',
+    'parent_permit_number'
+];
+
 // $fee_fields = [
 //     'permit_fee_id',
 //     'permit_number',
@@ -40,6 +45,10 @@ $contact_fields = [
 $columns = implode(',', $permit_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $permit_fields));
 $insert_permit = $DCT->prepare("insert into permit ($columns) values($params)");
+
+$columns = implode(',', $parent_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $parent_fields));
+$insert_parent = $DCT->prepare("insert into permit_parent_permit ($columns) values($params)");
 
 // $columns = implode(',', $fee_fields);
 // $params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
@@ -64,14 +73,17 @@ $sql = "select p.id,
                i.last_name,
                p.fee,
                p.bond_id,
-               c.company_id,
-               c.contact_id,
+              pc.company_id as permit_company_id,
+              bc.company_id,
+              pc.contact_id as permit_contact_id,
+              bc.contact_id,
                b.bond_num,
                b.bond_company_id
-        from row.excavpermits      p
-        left join inspectors       i on p.reviewer_id=i.user_id
-        left join company_contacts c on c.id=p.company_contact_id
-        left join bonds            b on b.id=p.bond_id";
+        from      excavpermits      p
+        left join inspectors        i on  p.reviewer_id=i.user_id
+             join company_contacts pc on pc.id=p.company_contact_id
+        left join bonds             b on  b.id=p.bond_id
+             join company_contacts bc on bc.id=b.company_contact_id";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -85,9 +97,11 @@ foreach ($result as $row) {
     $issue_date = $row['start_date'] ?? $row['date'      ];
     if ($issue_date < $apply_date) { $apply_date = $issue_date; }
 
+    $permit_number = $row['permit_num'];
+
     $insert_permit->execute([
         'permit_type'             => 'Excavation',
-        'permit_number'           => $row['permit_num' ],
+        'permit_number'           => $permit_number,
         'permit_sub_type'         => $row['permit_type'],
         'permit_status'           => $row['status'     ],
         'permit_description'      => $row['project'    ],
@@ -97,38 +111,33 @@ foreach ($result as $row) {
         'legacy_data_source_name' => DATASOURCE_ROW
     ]);
 
-//     $fee_id     = DATASOURCE_ROW."_$row[id]";
-//     $fee_amount = (float)$row['fee'];
-//     if ($fee_amount > 0) {
-//         $insert_fee->execute([
-//             'permit_fee_id' => $fee_id,
-//             'permit_number' => $row['permit_num'],
-//             'fee_amount'    => $fee_amount,
-//             'fee_date'      => $row['date']
-//         ]);
-//     }
-
-    if ((int)$row['bond_id'] > 0
-          && $row['bond_num']
-          && $row['bond_company_id']
-          && $row['bond_company_id'] != '-1') {
-        $insert_bond->execute([
-            'permit_number' => $row['permit_num'],
-            'bond_id'       => DATASOURCE_ROW."_$row[bond_id]"
+    if ($row['bond_id']) {
+        // The bond permit should already exist for this bond_id
+        // The company and contact should be pulled from the Bond's company_contact_id
+        $company       = $row['company_id'] ? DATASOURCE_ROW.'_companies_'.$row['company_id'] : null;
+        $contact       = $row['contact_id'] ? DATASOURCE_ROW.'_contacts_' .$row['contact_id'] : null;
+        $principal     = $company ?? $contact;
+        $bond_permit   = $company
+                        ? DATASOURCE_ROW.'_company_bond_'.$row['company_id']
+                        : DATASOURCE_ROW.'_contact_bond_'.$row['contact_id'];
+        $insert_parent->execute([
+            'permit_number'        => $bond_permit,
+            'parent_permit_number' => $permit_number
         ]);
     }
 
-    if ($row['company_id'] && $row['contact_id']) {
+    if ($row['permit_company_id']) {
         $insert_contact->execute([
-            'permit_number'           => $row['permit_num'],
-            'contact_id'              => DATASOURCE_ROW."_companies_$row[company_id]",
+            'permit_number'           => $permit_number,
+            'contact_id'              => DATASOURCE_ROW."_companies_$row[permit_company_id]",
             'contact_type'            => 'company',
             'primary_billing_contact' => 1
         ]);
-
+    }
+    if ($row['permit_contact_id']) {
         $insert_contact->execute([
-            'permit_number'           => $row['permit_num'],
-            'contact_id'              => DATASOURCE_ROW."_contacts_$row[contact_id]",
+            'permit_number'           => $permit_number,
+            'contact_id'              => DATASOURCE_ROW."_contacts_$row[permit_contact_id]",
             'contact_type'            => 'contact',
             'primary_billing_contact' => 0
         ]);

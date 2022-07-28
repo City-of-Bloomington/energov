@@ -49,6 +49,7 @@ $DCT->query('delete from inspection_additional_fields');
 $DCT->query('delete from inspection');
 $DCT->query('delete from PERMIT_TABLE_custom_fields');
 $DCT->query('delete from permit_additional_fields');
+$DCT->query('delete from permit_parent_permit');
 $DCT->query('delete from permit_contact');
 $DCT->query('delete from permit_parcel');
 $DCT->query('delete from permit_address');

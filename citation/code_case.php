@@ -117,7 +117,7 @@ foreach ($result as $row) {
         'violation_priority'     => $row['citation'       ],
         'violation_note'         => $row['note'           ],
         'citation_date'          => $row['date_writen'    ],
-        'compliance_date'        => $row['compliance_date'],
+        'compliance_date'        => $row['date_complied'  ],
         'resolved_date'          => $row['date_complied'  ]
     ]);
 
