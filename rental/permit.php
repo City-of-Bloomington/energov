@@ -28,6 +28,7 @@ $additional_fields = [
 
 $custom_fields = [
     'permit_number',
+    'structure',
     'Units',
     'NumberOfBedrooms',
     'OccupancyLoad',
@@ -46,7 +47,8 @@ $columns = implode(',', $custom_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $custom_fields));
 $insert_custom = $DCT->prepare("insert into PERMIT_TABLE_custom_fields ($columns) values($params)");
 
-$sql = "select u.units,
+$sql = "select s.identifier,
+               u.units,
                u.bedrooms,
                u.occload,
                case when u.sleeproom is not null then 1 else null end as sleeproom
@@ -123,10 +125,11 @@ foreach ($result as $row) {
     foreach ($units as $u) {
         $insert_custom->execute([
             'permit_number'     => $permit_number,
-            'Units'             => $u['units'    ],
-            'NumberOfBedrooms'  => $u['bedrooms' ],
-            'OccupancyLoad'     => $u['occload'  ],
-            'SleepRooms'        => $u['sleeproom']
+            'structure'         => $u['identifier'],
+            'Units'             => $u['units'     ],
+            'NumberOfBedrooms'  => $u['bedrooms'  ],
+            'OccupancyLoad'     => $u['occload'   ],
+            'SleepRooms'        => $u['sleeproom' ]
         ]);
     }
 }
