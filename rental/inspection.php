@@ -20,7 +20,10 @@ $inspection_fields = [
 
 $additional_fields = [
     'inspection_number',
-    'Affidavit'
+    'Affidavit',
+    'Violation',
+    'SmokeDetectors',
+    'LifeSafety'
 ];
 
 $columns = implode(',', $inspection_fields);
@@ -37,7 +40,10 @@ $sql     = "select i.insp_id,
                    i.inspected_by,
                    i.inspection_date,
                    i.comments,
-                   i.has_affidavit
+                   i.has_affidavit,
+                   i.violations,
+                   i.smook_detectors,
+                   i.life_safety
             from rental.inspections i";
 $query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -62,11 +68,12 @@ foreach ($result as $row) {
         'comment'              => $row['comments'       ]
     ]);
 
-    if ($row['has_affidavit'] == 'Yes') {
-        $insert_additional->execute([
-            'inspection_number' => $inspection_number,
-            'Affidavit'         => 1
-        ]);
-    }
+    $insert_additional->execute([
+        'inspection_number' => $inspection_number,
+        'Affidavit'         => 1,
+        'Violation'         => $row['violations'     ],
+        'SmokeDetectors'    => $row['smook_detectors'],
+        'LifeSafety'        => $row['life_safety'    ]
+    ]);
 }
 echo "\n";
