@@ -23,7 +23,9 @@ $additional_fields = [
     'Heat',
     'Attic',
     'Accessory',
-    'Affordable'
+    'Affordable',
+    'Buildings',
+    'Units'
 ];
 
 $custom_fields = [
@@ -103,23 +105,9 @@ foreach ($result as $row) {
         'legacy_data_source_name' => DATASOURCE_RENTAL,
     ]);
 
-
-    $select_inspections->execute([$row['id']]);
-    $inspections = $select_inspections->fetchAll(\PDO::FETCH_ASSOC);
-
-    $a = [
-        'permit_number'  => $permit_number,
-        'Stories'        => $inspections[0]['story_cnt' ] ?? null,
-        'Foundation'     => $inspections[0]['foundation'] ?? null,
-        'Heat'           => $inspections[0]['heat_src'  ] ?? null,
-        'Attic'          => $inspections[0]['attic'     ] ?? null,
-        'Accessory'      => $row['affordable'],
-        'Affordable'     => $row['accessory_dwelling'],
-    ];
-    if ($a['Stories'] || $a['Foundation'] || $a['Heat'] || $a['Attic'] || $a['Affordable']) {
-        $insert_additional->execute($a);
-    }
-
+    $structures     = [];
+    $totalBuildings = 0;
+    $totalUnits     = 0;
     $select_units->execute([$row['id']]);
     $units = $select_units->fetchAll(\PDO::FETCH_ASSOC);
     foreach ($units as $u) {
@@ -131,6 +119,26 @@ foreach ($result as $row) {
             'OccupancyLoad'     => $u['occload'   ],
             'SleepRooms'        => $u['sleeproom' ]
         ]);
+
+        if (!in_array($u['identifier'], $structures)) { $structures[] = $u['identifier']; }
+        $totalUnits += (int)$u['units'];
     }
+    $totalBuildings = count($structures);
+
+    // Use the first inspection we find as the source for the custom fields
+    $select_inspections->execute([$row['id']]);
+    $inspections = $select_inspections->fetchAll(\PDO::FETCH_ASSOC);
+
+    $insert_additional->execute([
+        'permit_number'  => $permit_number,
+        'Stories'        => $inspections[0]['story_cnt' ] ?? null,
+        'Foundation'     => $inspections[0]['foundation'] ?? null,
+        'Heat'           => $inspections[0]['heat_src'  ] ?? null,
+        'Attic'          => $inspections[0]['attic'     ] ?? null,
+        'Accessory'      => $row['affordable'],
+        'Affordable'     => $row['accessory_dwelling'],
+        'Buildings'      => $totalBuildings,
+        'Units'          => $totalUnits
+    ]);
 }
 echo "\n";
