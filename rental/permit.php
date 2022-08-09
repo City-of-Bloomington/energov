@@ -25,7 +25,8 @@ $additional_fields = [
     'Accessory',
     'Affordable',
     'Buildings',
-    'Units'
+    'Units',
+    'Bathrooms'
 ];
 
 $custom_fields = [
@@ -72,6 +73,7 @@ $sql = "select  r.id,
                 r.registered_date,
                 r.permit_issued,
                 r.permit_expires,
+                r.bath_count,
                 case when r.accessory_dwelling is not null then 1 else null end as accessory_dwelling,
                 case when r.affordable         is not null then 1 else null end as affordable,
                 pulls.earliest_pull
@@ -135,10 +137,11 @@ foreach ($result as $row) {
         'Foundation'     => $inspections[0]['foundation'] ?? null,
         'Heat'           => $inspections[0]['heat_src'  ] ?? null,
         'Attic'          => $inspections[0]['attic'     ] ?? null,
-        'Accessory'      => $row['affordable'],
+        'Accessory'      => $row['affordable'        ],
         'Affordable'     => $row['accessory_dwelling'],
+        'Bathrooms'      => $row['bath_count'        ],
         'Buildings'      => $totalBuildings,
-        'Units'          => $totalUnits
+        'Units'          => $totalUnits,
     ]);
 }
 echo "\n";

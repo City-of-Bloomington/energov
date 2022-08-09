@@ -130,6 +130,7 @@ create table permit_additional_fields (
     permit_number varchar(100) not null,
     Buildings     int,
     Units         int,
+    Bathrooms     numeric(3,1),
     Stories       int,
     Foundation    varchar(100),
     Heat          varchar(100),
@@ -144,7 +145,6 @@ create table PERMIT_TABLE_custom_fields (
     structure     varchar(30),
     Units                int,
     NumberOfBedrooms     int,
-    NumberofBathrooms numeric(3,1),
     OccupancyLoad        int,
     SleepRooms           bit
     foreign key (permit_number) references permit(permit_number)
