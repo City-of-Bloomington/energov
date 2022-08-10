@@ -69,7 +69,7 @@ include './rental/inspection.php';
 include './rental/permit_inspection.php';
 include './rental/permit_note.php';
 include './rental/permit_activity.php';
-// include './rental/permit_fee.php';
+include './rental/permit_fee.php';
 // include './rental/payment.php';
 // include './rental/attachment_document.php';
 
