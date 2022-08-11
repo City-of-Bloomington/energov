@@ -170,8 +170,11 @@ create table inspection (
 );
 
 create table inspection_additional_fields (
-    inspection_number       varchar(100),
-    Affidavit               bit,
+    inspection_number varchar(100),
+    Affidavit         bit,
+    Violation         int,
+    SmokeDetectors    int,
+    LifeSafety        int,
     foreign key (inspection_number) references inspection(inspection_number)
 );
 
