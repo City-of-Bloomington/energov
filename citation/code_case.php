@@ -9,6 +9,7 @@ declare (strict_types=1);
 $case_fields = [
     'case_number',
     'case_type',
+    'case_description',
     'case_status',
     'open_date',
     'closed_date',
@@ -65,28 +66,39 @@ $insert_address  = $DCT->prepare("insert into code_case_address ($columns) value
 // $insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
 
 
-$sql     = "select c.id,
-                   c.status,
-                   c.date_writen,
-                   c.compliance_date,
-                   u.empid,
-                   v.name,
-                   c.citation,
-                   c.note,
-                   c.date_complied,
-                   c.address_street_number,
-                   c.address_street_direction,
-                   c.address_street_name,
-                   c.address_street_type,
-                   c.address_city,
-                   c.address_state,
-                   c.address_zipcode,
-                   c.sud_type,
-                   c.sud_num,
-                   c.amount
-            from citations       c
-            join violation_types v on v.id=c.violation
-            left join users      u on u.id=c.inspector_id";
+$sql = "select c.id,
+               u.empid,
+               v.name,
+               c.citation,
+               c.note,
+               c.address_street_number,
+               c.address_street_direction,
+               c.address_street_name,
+               c.address_street_type,
+               c.address_city,
+               c.address_state,
+               c.address_zipcode,
+               c.sud_type,
+               c.sud_num,
+               c.inactive,
+               c.status,
+               c.complied_status,
+               a.name as legal_status,
+               c.amount,
+               c.balance,
+               c.date_writen,
+               c.compliance_date,
+               c.date_complied,
+               greatest(coalesce(date_writen,             0),
+                        coalesce(due_and_compliance_date, 0),
+                        coalesce(date_complied,           0),
+                        coalesce(date_paid,               0),
+                        coalesce(trans_collection_date,   0),
+                        coalesce(recalled_date,           0)) as latest_date
+        from citations       c
+        join violation_types v on v.id=c.violation
+        left join users      u on u.id=c.inspector_id
+        left join actions    a on a.id=c.action_id";
 $query  = $CITATION->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -100,21 +112,36 @@ foreach ($result as $row) {
     $violation_number = $case_number;
     $fee_id           = $case_number;
 
+    $closed_date      = null;
+    if (in_array($row['status'], ['WARNING', 'VOID', 'ADMIN VOID'])) {
+        $closed_date = $row['latest_date'];
+    }
+    if (in_array($row['status'], ['PAID', 'UNCOLLECTABLE'])
+     && in_array($row['complied_status'], ['Complied', 'ABATED'])) {
+         $closed_date = $row['latest_date'];
+    }
+
+    $status = $row['status'];
+    if ($status == 'SENT TO LEGAL' && $row['legal_status']) {
+        $status = $row['legal_status'];
+    }
+
     $insert_case->execute([
         'case_number'      => $case_number,
-        'case_type'        => 'citation',
-        'case_status'      => $row['status'       ],
-        'open_date'        => $row['date_writen'  ],
-        'closed_date'      => $row['date_complied'],
-        'assigned_to_user' => $row['empid'        ]
+        'case_type'        => 'Title 6',
+        'case_status'      => $status,
+        'case_description' => $row['name'       ],
+        'assigned_to_user' => $row['empid'      ],
+        'open_date'        => $row['date_writen'],
+        'closed_date'      => $closed_date
     ]);
 
     $insert_violation->execute([
         'violation_number'       => $violation_number,
         'case_number'            => $case_number,
         'violation_code'         => $row['name'           ],
-        'violation_status'       => $row['status'         ],
-        'violation_priority'     => $row['citation'       ],
+        'violation_status'       => $row['complied_status'],
+        'violation_priority'     => 'Medium',
         'violation_note'         => $row['note'           ],
         'citation_date'          => $row['date_writen'    ],
         'compliance_date'        => $row['date_complied'  ],
