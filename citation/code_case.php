@@ -42,12 +42,13 @@ $address_fields = [
     'country_type'
 ];
 
-// $fee_fields = [
-//     'code_case_violation_fee_id',
-//     'violation_number',
-//     'fee_amount',
-//     'fee_date'
-// ];
+$fee_fields = [
+    'code_case_violation_fee_id',
+    'violation_number',
+    'fee_type',
+    'fee_amount',
+    'fee_date'
+];
 
 $columns = implode(',', $case_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $case_fields));
@@ -61,10 +62,9 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address  = $DCT->prepare("insert into code_case_address ($columns) values($params)");
 
-// $columns = implode(',', $fee_fields);
-// $params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
-// $insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
-
+$columns = implode(',', $fee_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
+$insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
 
 $sql = "select c.id,
                u.empid,
@@ -164,14 +164,29 @@ foreach ($result as $row) {
         ]);
     }
 
-//     $amount = (float)$row['amount'];
-//     if ($amount > 0) {
-//         $insert_fee->execute([
-//             'code_case_violation_fee_id' => $fee_id,
-//             'violation_number'           => $violation_number,
-//             'fee_amount'                 => $amount,
-//             'fee_date'                   => $row['date_writen']
-//         ]);
-//     }
+    if (   !$row['inactive']
+        && !in_array($row['status'], ['WARNING', 'PAID', 'VOID', 'UNCOLLECTABLE', 'ADMIN VOID'])
+        &&  (float)$row['balance'] > 0) {
+
+        $amount = (int)$row['amount'];
+        switch ($amount) {
+            case  15: $fee_type = 'Title 6 6.04.110'; break;
+            case  50: $fee_type = 'Title 6 First';    break;
+            case 100: $fee_type = 'Title 6 Second';   break;
+            case 150: $fee_type = 'Title 6 Third';    break;
+            default: die('Invalid fee amount');
+        }
+
+        if ($amount > 0) {
+            $insert_fee->execute([
+                'code_case_violation_fee_id' => $fee_id,
+                'violation_number'           => $violation_number,
+                'fee_type'                   => $fee_type,
+                'fee_amount'                 => $amount,
+                'fee_date'                   => $row['date_writen']
+            ]);
+        }
+    }
+
 }
 echo "\n";
