@@ -6,14 +6,16 @@
  * @param $DCT       PDO connection to DCT database
  */
 declare (strict_types=1);
+$ATTACHMENT_PATH = "S:\\legacy\\citation\\depot";
+
 $fields = [
     'parent_case_number',
     'parent_case_table',
     'attached_by',
+    'file_path',
     'file_name',
     'doc_comment',
-    'doc_date',
-    'document_data'
+    'doc_date'
 ];
 
 $columns = implode(',', $fields);
@@ -43,17 +45,16 @@ foreach ($result as $row) {
     $file = "$row[year]/$row[name]";
     if (is_file("$dir/$file")) {
         echo " => $file";
-        $fp = fopen("$dir/$file", 'rb');
 
-        $insert->bindParam('parent_case_number', $case_number,     \PDO::PARAM_STR);
-        $insert->bindValue('parent_case_table' , 'code',           \PDO::PARAM_STR);
-        $insert->bindParam('attached_by'       , $row['added_by'], \PDO::PARAM_STR);
-        $insert->bindParam('file_name'         , $row['name'    ], \PDO::PARAM_STR);
-        $insert->bindParam('doc_comment'       , $row['notes'   ], \PDO::PARAM_STR);
-        $insert->bindParam('doc_date'          , $row['date'    ], \PDO::PARAM_STR);
-        $insert->bindParam('document_data'     , $fp, \PDO::PARAM_LOB, 0, \PDO::SQLSRV_ENCODING_BINARY);
-        $insert->execute();
-        fclose($fp);
+        $insert->execute([
+            'parent_case_number' => $case_number,
+            'parent_case_table'  => 'code',
+            'file_path'          => "$ATTACHMENT_PATH\\$row[year]",
+            'file_name'          => $row['name'    ],
+            'doc_comment'        => $row['notes'   ],
+            'doc_date'           => $row['date'    ],
+            'attached_by'        => $row['added_by']
+        ]);
     }
 }
 echo "\n";

@@ -6,14 +6,15 @@
  * @param $DCT    PDO connection to DCT database
  */
 declare (strict_types=1);
+$ATTACHMENT_PATH = "S:\\legacy\\rental";
 
 $fields = [
     'parent_case_number',
     'parent_case_table',
+    'file_path',
     'file_name',
     'doc_comment',
-    'doc_date',
-    'document_data'
+    'doc_date'
 ];
 
 $columns = implode(',', $fields);
@@ -41,15 +42,14 @@ foreach ($result as $row) {
     $file = "$row[year]/$row[image_file]";
     if (is_file("$dir/$file")) {
         echo " => $file";
-        $fp = fopen("$dir/$file", 'rb');
-        $insert->bindParam('parent_case_number', $permit_number,     \PDO::PARAM_STR);
-        $insert->bindValue('parent_case_table' , 'permit',           \PDO::PARAM_STR);
-        $insert->bindParam('file_name'         , $row['image_file'], \PDO::PARAM_STR);
-        $insert->bindParam('doc_comment'       , $row['notes'     ], \PDO::PARAM_STR);
-        $insert->bindParam('doc_date'          , $row['image_date'], \PDO::PARAM_STR);
-        $insert->bindParam('document_data'     , $fp, \PDO::PARAM_LOB, 0, \PDO::SQLSRV_ENCODING_BINARY);
-        $insert->execute();
-        fclose($fp);
+        $insert->execute([
+            'parent_case_number' => $permit_number,
+            'parent_case_table'  => 'permit',
+            'file_path'          => "$ATTACHMENT_PATH\\files\\$row[year]",
+            'file_name'          => $row['image_file'],
+            'doc_comment'        => $row['notes'     ],
+            'doc_date'           => $row['image_date']
+        ]);
     }
 }
 echo "\n";
@@ -69,7 +69,7 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/attachment inspection: $percent% $row[insp_id]";
 
-    $permit_number = DATASOURCE_RENTAL."_$row[id]";
+    $inspection_number = DATASOURCE_RENTAL."_$row[insp_id]";
 
     $dir  = SITE_HOME.'/rental/inspections';
     $file = str_replace("\\", '/', $row['insp_file']);
@@ -77,17 +77,20 @@ foreach ($result as $row) {
     $date = new \DateTime($row['inspection_date']);
     $name = 'inspection_'.$date->format('Y-m-d').$ext;
 
+
     if (is_file("$dir/$file")) {
         echo " => $file";
-        $fp = fopen("$dir/$file", 'rb');
-        $insert->bindParam('parent_case_number', $permit_number,     \PDO::PARAM_STR);
-        $insert->bindValue('parent_case_table' , 'permit',           \PDO::PARAM_STR);
-        $insert->bindParam('file_name'         , $name,              \PDO::PARAM_STR);
-        $insert->bindValue('doc_comment'       , null,               \PDO::PARAM_NULL);
-        $insert->bindParam('doc_date'          , $row['inspection_date'], \PDO::PARAM_STR);
-        $insert->bindParam('document_data'     , $fp, \PDO::PARAM_LOB, 0, \PDO::SQLSRV_ENCODING_BINARY);
-        $insert->execute();
-        fclose($fp);
+        $file_path = str_replace('/', '\\', dirname($file));
+        $file_name = basename($file);
+
+        $insert->execute([
+            'parent_case_number' => $inspection_number,
+            'parent_case_table'  => 'inspection',
+            'file_path'          => "$ATTACHMENT_PATH\\inspections\\$file_path",
+            'file_name'          => $file_name,
+            'doc_comment'        => null,
+            'doc_date'           => $row['inspection_date']
+        ]);
     }
 }
 echo "\n";
