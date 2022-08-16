@@ -42,3 +42,24 @@ left join (
 	where at.NAME='Agent'
 ) agentaddress on permit.PMPERMITID=agentaddress.PMPERMITID
 where permit.PMPERMITID='7450d8ba-dd77-4799-97fb-023e9b0684c0';
+
+
+select t.name,
+       r.displayname,
+       r.customfieldtablecolumnrefid,
+       v.value
+from customfieldtable t
+join customfieldtablecolumnref  r on r.customfieldtableid=t.customfieldtableid
+left join (
+    select objectid,
+           cftablecolumnrefid,
+           stringvalue as value
+    from customsavertblcol_str
+    union
+    select objectid,
+           cftablecolumnrefid,
+           intvalue as value
+    from customsavertblcol_int
+) v on v.cftablecolumnrefid=r.customfieldtablecolumnrefid
+where t.name='Rental Property Information'
+  and v.objectid='7450d8ba-dd77-4799-97fb-023e9b0684c0';
