@@ -18,6 +18,7 @@ $fields = [
 
 $additional_fields = [
     'permit_number',
+    'TypeofHousing',
     'Stories',
     'Foundation',
     'Heat',
@@ -74,6 +75,8 @@ $sql = "select  r.id,
                 r.permit_issued,
                 r.permit_expires,
                 r.bath_count,
+                r.prop_type,
+                r.building_type,
                 case when r.accessory_dwelling is not null then 1 else null end as accessory_dwelling,
                 case when r.affordable         is not null then 1 else null end as affordable,
                 pulls.earliest_pull
@@ -131,8 +134,21 @@ foreach ($result as $row) {
     $select_inspections->execute([$row['id']]);
     $inspections = $select_inspections->fetchAll(\PDO::FETCH_ASSOC);
 
+    $housingType = null;
+    switch ($row['prop_type']) {
+        case 'Condo':         $housingType = 'Condominium';   break;
+        case 'Apartment':     $housingType = 'Multi-Family';  break;
+        case 'Rooming House': $housingType = 'Rooming House'; break;
+        default:
+            switch ($row['building_type']) {
+                case 'Multi-Family': $housingType = 'Multi-Family'; break;
+                default:             $housingType = 'Single-Family';
+            }
+    }
+
     $insert_additional->execute([
         'permit_number'  => $permit_number,
+        'TypeofHousing'  => $housingType,
         'Stories'        => $inspections[0]['story_cnt' ] ?? null,
         'Foundation'     => $inspections[0]['foundation'] ?? null,
         'Heat'           => $inspections[0]['heat_src'  ] ?? null,

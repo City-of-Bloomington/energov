@@ -128,6 +128,7 @@ create table permit_activity (
 
 create table permit_additional_fields (
     permit_number varchar(100) not null,
+    TypeofHousing varchar(100),
     Buildings     int,
     Units         int,
     Bathrooms     numeric(3,1),
