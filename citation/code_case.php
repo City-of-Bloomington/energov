@@ -43,8 +43,8 @@ $address_fields = [
 ];
 
 $fee_fields = [
-    'code_case_violation_fee_id',
-    'violation_number',
+    'code_case_fee_id',
+    'case_number',
     'fee_type',
     'fee_amount',
     'fee_date'
@@ -64,7 +64,7 @@ $insert_address  = $DCT->prepare("insert into code_case_address ($columns) value
 
 $columns = implode(',', $fee_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fee_fields));
-$insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
+$insert_fee  = $DCT->prepare("insert into code_case_fee ($columns) values($params)");
 
 $sql = "select c.id,
                u.empid,
@@ -179,11 +179,11 @@ foreach ($result as $row) {
 
         if ($amount > 0) {
             $insert_fee->execute([
-                'code_case_violation_fee_id' => $fee_id,
-                'violation_number'           => $violation_number,
-                'fee_type'                   => $fee_type,
-                'fee_amount'                 => $amount,
-                'fee_date'                   => $row['date_writen']
+                'code_case_fee_id' => $fee_id,
+                'case_number'      => $case_number,
+                'fee_type'         => $fee_type,
+                'fee_amount'       => $amount,
+                'fee_date'         => $row['date_writen']
             ]);
         }
     }
