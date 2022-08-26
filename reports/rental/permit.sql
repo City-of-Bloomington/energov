@@ -63,3 +63,15 @@ left join (
 ) v on v.cftablecolumnrefid=r.customfieldtablecolumnrefid
 where t.name='Rental Property Information'
   and v.objectid='7450d8ba-dd77-4799-97fb-023e9b0684c0';
+
+
+select  wfs.name as workflow_step,
+       wfas.name as action_step,
+       s.statusname,
+       i.actualenddate
+from dbo.pmpermitwfstep       wfs
+join dbo.pmpermitwfactionstep wfas on wfas.pmpermitwfstepid=wfs.pmpermitwfstepid
+join dbo.iminspectionactref   ia   on ia.objectid=wfas.pmpermitwfactionstepid
+join dbo.iminspection         i    on i.iminspectionid=ia.iminspectionid
+join dbo.iminspectionstatus   s    on i.iminspectionstatusid=s.iminspectionstatusid
+where wfs.pmpermitid='7450d8ba-dd77-4799-97fb-023e9b0684c0';
