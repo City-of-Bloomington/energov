@@ -40,6 +40,15 @@ $custom_fields = [
     'SleepRooms'
 ];
 
+$inspection_fields = [
+    'inspection_case_number',
+    'inspection_case_type',
+    'inspection_case_status',
+    'create_date',
+    'last_inspection_date',
+    'run_schedule'
+];
+
 $columns = implode(',', $fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $fields));
 $insert  = $DCT->prepare("insert into permit ($columns) values($params)");
@@ -52,6 +61,11 @@ $columns = implode(',', $custom_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $custom_fields));
 $insert_custom = $DCT->prepare("insert into PERMIT_TABLE_custom_fields ($columns) values($params)");
 
+$columns = implode(',', $inspection_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $inspection_fields));
+$insert_inspection = $DCT->prepare("insert into inspection_case ($columns) values($params)");
+
+
 $sql = "select s.identifier,
                u.units,
                u.bedrooms,
@@ -62,7 +76,11 @@ $sql = "select s.identifier,
         where s.rid=?";
 $select_units = $RENTAL->prepare($sql);
 
-$sql = "select insp_id, foundation, heat_src, story_cnt,
+$sql = "select insp_id,
+               inspection_date,
+               foundation,
+               heat_src,
+               story_cnt,
                case when attic='Yes' then 1 else null end as attic
         from rental.inspections
         where id=? and rownum=1
@@ -101,11 +119,12 @@ foreach ($result as $row) {
 
     $apply_date    = $row['registered_date'] ? $row['registered_date'] : $row['earliest_pull'];
     $permit_number = DATASOURCE_RENTAL."_$row[id]";
+    $permit_status = $row['inactive'] ? 'inactive' : 'active';
 
     $insert->execute([
         'permit_number'           => $permit_number,
         'permit_type'             => 'rental',
-        'permit_status'           => $row['inactive'] ? 'inactive' : 'active',
+        'permit_status'           => $permit_status,
         'apply_date'              => $apply_date,
         'issue_date'              => $row['permit_issued'  ],
         'expire_date'             => $row['permit_expires' ],
@@ -163,6 +182,15 @@ foreach ($result as $row) {
         'Bathrooms'      => $row['bath_count'        ],
         'Buildings'      => $totalBuildings,
         'Units'          => $totalUnits,
+    ]);
+
+    $insert_inspection->execute([
+        'inspection_case_number' => $permit_number,
+        'inspection_case_status' => $permit_status,
+        'inspection_case_type'   => 'Recurring Rental Property Inspection',
+        'create_date'            => $apply_date,
+        'last_inspection_date'   => $inspections[0]['inspection_date'] ?? null,
+        'run_schedule'           => $permit_length ? "$permit_length years" : null
     ]);
 }
 echo "\n";

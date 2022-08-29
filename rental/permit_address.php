@@ -25,9 +25,33 @@ $parcel_fields = [
     'permit_number',
     'parcel_number'
 ];
+
+$inspection_fields = [
+    'inspection_case_number',
+    'street_number',
+    'pre_direction',
+    'street_name',
+    'street_type',
+    'post_direction',
+    'unit_suite_number',
+    'city',
+    'state_code',
+    'zip',
+    'country_type'
+];
+
+$inspection_parcel_fields = [
+    'inspection_case_number',
+    'parcel_number'
+];
+
 $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert permit_address ($columns) values($params)");
+
+$columns = implode(',', $inspection_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $inspection_fields));
+$insert_inspection = $DCT->prepare("insert inspection_case_address ($columns) values($params)");
 
 $sql = "insert into parcel (parcel_number)
         select ?
@@ -37,6 +61,10 @@ $insert_parcel  = $DCT->prepare($sql);
 $columns = implode(',', $parcel_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $parcel_fields));
 $insert_permit = $DCT->prepare("insert permit_parcel ($columns) values($params)");
+
+$columns = implode(',', $inspection_parcel_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $inspection_parcel_fields));
+$insert_inspection_parcel = $DCT->prepare("insert inspection_case_parcel ($columns) values($params)");
 
 $sql = "select r.id,
                a.street_num,
@@ -99,6 +127,19 @@ foreach ($result as $row) {
         'zip'               => $zip,
         'country_type'      => COUNTRY_TYPE,
     ]);
+    $insert_inspection->execute([
+        'inspection_case_number' => $permit_number,
+        'street_number'     => $row['street_num' ],
+        'pre_direction'     => $row['street_dir' ],
+        'street_name'       => $row['street_name'],
+        'street_type'       => $row['street_type'],
+        'post_direction'    => $row['post_dir'   ],
+        'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+        'city'              => $city,
+        'state_code'        => $state,
+        'zip'               => $zip,
+        'country_type'      => COUNTRY_TYPE,
+    ]);
     if (   !empty($info['address']['state_plane_x'])
         && !empty($info['address']['state_plane_y'])) {
         $parcels = $ARCGIS->parcels('/Energov/EnergovData/MapServer/1',
@@ -111,6 +152,10 @@ foreach ($result as $row) {
                     $insert_permit->execute([
                         'permit_number' => $permit_number,
                         'parcel_number' => $p['pin_18']
+                    ]);
+                    $insert_inspection_parcel->execute([
+                        'inspection_case_number' => $permit_number,
+                        'parcel_number'          => $p['pin_18']
                     ]);
                 }
             }

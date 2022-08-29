@@ -48,6 +48,8 @@ $DCT->query('delete from permit_note');
 $DCT->query('delete from permit_inspection');
 $DCT->query('delete from inspection_additional_fields');
 $DCT->query('delete from inspection');
+$DCT->query('delete from inspection_case');
+$DCT->query('delete from inspection_case_parcel');
 $DCT->query('delete from PERMIT_TABLE_custom_fields');
 $DCT->query('delete from permit_additional_fields');
 $DCT->query('delete from permit_parent_permit');
@@ -65,6 +67,7 @@ $DCT->query("dbcc checkident('attachment_document', RESEED, 0)");
 include './rental/contact.php';
 include './rental/permit.php';
 include './rental/permit_contact.php';
+include './rental/permit_address.php';
 include './rental/inspection.php';
 include './rental/permit_inspection.php';
 include './rental/permit_note.php';
@@ -96,7 +99,6 @@ include './nov/code_case_contact.php';
 // include './planning/plan_case.php';
 // include './planning/plan_address.php';
 
-include './rental/permit_address.php';
 include './de-dupe.php';
 
 function db_connect(array $config): \PDO
