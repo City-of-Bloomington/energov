@@ -19,6 +19,7 @@ $fields = [
 $additional_fields = [
     'permit_number',
     'TypeofHousing',
+    'PermitLength',
     'Stories',
     'Foundation',
     'Heat',
@@ -74,6 +75,7 @@ $sql = "select  r.id,
                 r.registered_date,
                 r.permit_issued,
                 r.permit_expires,
+                r.permit_length,
                 r.bath_count,
                 r.prop_type,
                 r.building_type,
@@ -146,9 +148,12 @@ foreach ($result as $row) {
             }
     }
 
+    $permit_length = (int)$row['permit_length'];
+
     $insert_additional->execute([
         'permit_number'  => $permit_number,
         'TypeofHousing'  => $housingType,
+        'PermitLength'   => $permit_length ? $permit_length : null,
         'Stories'        => $inspections[0]['story_cnt' ] ?? null,
         'Foundation'     => $inspections[0]['foundation'] ?? null,
         'Heat'           => $inspections[0]['heat_src'  ] ?? null,
