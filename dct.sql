@@ -354,3 +354,10 @@ create table code_case_violation_payment_detail (
     foreign key (payment_id) references payment(payment_id)
 );
 
+create table Contact_SubContact (
+    Contact_Id    varchar(50) not null,
+    SubContact_Id varchar(50) not null,
+    primary key (Contact_Id, SubContact_Id),
+    foreign key (   Contact_Id) references contact(contact_id),
+    foreign key (SubContact_Id) references contact(contact_id)
+)
