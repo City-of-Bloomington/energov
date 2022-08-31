@@ -27,9 +27,11 @@ $update_obligee   = $DCT->prepare('update bond set   obligee_contact_id=? where 
 $update_principal = $DCT->prepare('update bond set principal_contact_id=? where principal_contact_id=?');
 $update_surety    = $DCT->prepare('update bond set    surety_contact_id=? where    surety_contact_id=?');
 
-$delete_addresses = $DCT->prepare('delete from contact_address where contact_id=?');
-$delete_notes     = $DCT->prepare('delete from contact_note    where contact_id=?');
-$delete_contact   = $DCT->prepare('delete from contact         where contact_id=?');
+$delete_sub_contact = $DCT->prepare('delete from contact_subcontact where subcontact_id=?');
+$delete_sub_company = $DCT->prepare('delete from contact_subcontact where    contact_id=?');
+$delete_addresses   = $DCT->prepare('delete from contact_address    where    contact_id=?');
+$delete_notes       = $DCT->prepare('delete from contact_note       where    contact_id=?');
+$delete_contact     = $DCT->prepare('delete from contact            where    contact_id=?');
 
 $cols    = implode(',', $fields);
 $sql     = "select $cols, count(*) as dupes
@@ -69,9 +71,11 @@ foreach ($result as $row) {
         $update_principal->execute([$id_primary, $id]);
         $update_surety   ->execute([$id_primary, $id]);
 
-        $delete_addresses->execute([$id]);
-        $delete_notes    ->execute([$id]);
-        $delete_contact  ->execute([$id]);
+        $delete_sub_contact->execute([$id]);
+        $delete_sub_company->execute([$id]);
+        $delete_addresses  ->execute([$id]);
+        $delete_notes      ->execute([$id]);
+        $delete_contact    ->execute([$id]);
     }
 }
 echo "\n";

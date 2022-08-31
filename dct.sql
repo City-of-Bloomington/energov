@@ -53,6 +53,14 @@ create table contact_note (
     foreign key (contact_id) references contact(contact_id)
 );
 
+create table contact_subcontact (
+    contact_id    varchar(50) not null,
+    subcontact_id varchar(50) not null,
+    primary key (contact_id, subcontact_id),
+    foreign key (   contact_id) references contact(contact_id),
+    foreign key (subcontact_id) references contact(contact_id)
+);
+
 create table permit (
     permit_number           varchar(100) not null primary key,
     permit_type             varchar(200),
@@ -353,11 +361,3 @@ create table code_case_violation_payment_detail (
     foreign key (code_case_violation_fee_id) references code_case_violation_fee(code_case_violation_fee_id),
     foreign key (payment_id) references payment(payment_id)
 );
-
-create table Contact_SubContact (
-    Contact_Id    varchar(50) not null,
-    SubContact_Id varchar(50) not null,
-    primary key (Contact_Id, SubContact_Id),
-    foreign key (   Contact_Id) references contact(contact_id),
-    foreign key (SubContact_Id) references contact(contact_id)
-)

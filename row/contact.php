@@ -33,6 +33,12 @@ $address_fields = [
     'zip',
     'country_type'
 ];
+
+$subcontact_fields = [
+    'contact_id',
+    'subcontact_id'
+];
+
 $columns = implode(',', $contact_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $contact_fields));
 $insert_contact  = $DCT->prepare("insert into contact ($columns) values($params)");
@@ -44,6 +50,10 @@ $insert_note     = $DCT->prepare("insert into contact_note ($columns) values($pa
 $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
+
+$columns = implode(',', $subcontact_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $subcontact_fields));
+$insert_subcontact = $DCT->prepare("insert into contact_subcontact ($columns) values($params)");
 
 $query  = $ROW->query('select * from companies');
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -167,6 +177,29 @@ foreach ($result as $row) {
         'is_company'     => 1,
         'is_individual'  => 0,
         'legacy_data_source_name' => $data_source
+    ]);
+}
+echo "\n";
+
+$sql = "select *
+        from company_contacts
+        where company_id is not null
+          and contact_id is not null";
+$query  = $ROW->query($sql);
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rrow/contact subcontact: $percent% $row[id]";
+
+    $contact_id    = DATASOURCE_ROW."_companies_$row[company_id]";
+    $subcontact_id = DATASOURCE_ROW."_contacts_$row[contact_id]";
+
+    $insert_subcontact->execute([
+        'contact_id'    => $contact_id,
+        'subcontact_id' => $subcontact_id
     ]);
 }
 echo "\n";
