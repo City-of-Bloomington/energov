@@ -184,7 +184,8 @@ echo "\n";
 $sql = "select *
         from company_contacts
         where company_id is not null
-          and contact_id is not null";
+          and contact_id is not null
+          and company_id!=contact_id";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
