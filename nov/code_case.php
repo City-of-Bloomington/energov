@@ -82,13 +82,14 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rnov/code_case: $percent% $row[id]";
 
     $case_number      = DATASOURCE_NOV."_$row[id]";
+    $case_status      = DATASOURCE_NOV."_$row[status]";
     $violation_number = $case_number;
     $fee_id           = $case_number;
 
     $insert_case->execute([
         'case_number'      => $case_number,
         'case_type'        => 'zoning',
-        'case_status'      => $row['status'           ],
+        'case_status'      => $case_status,
         'case_description' => $row['legal_description'],
         'open_date'        => $row['date_written'     ],
         'closed_date'      => $row['compliance_date'  ],
@@ -99,7 +100,7 @@ foreach ($result as $row) {
         'violation_number'       => $violation_number,
         'case_number'            => $case_number,
         'violation_code'         => substr($row['violation_type'], 0, 50),
-        'violation_status'       => $row['status'         ],
+        'violation_status'       => $case_status,
         'violation_priority'     => $row['citation'       ],
         'violation_note'         => $row['note'           ],
         'citation_date'          => $row['date_written'   ],

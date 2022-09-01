@@ -119,7 +119,8 @@ foreach ($result as $row) {
 
     $apply_date    = $row['registered_date'] ? $row['registered_date'] : $row['earliest_pull'];
     $permit_number = DATASOURCE_RENTAL."_$row[id]";
-    $permit_status = $row['inactive'] ? 'inactive' : 'active';
+    $active        = $row['inactive'] ? 'inactive' : 'active';
+    $permit_status = DATASOURCE_RENTAL."_$row[status_text]_$active";
 
     $insert->execute([
         'permit_number'           => $permit_number,

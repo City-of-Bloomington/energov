@@ -108,7 +108,9 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rcitation/code_case: $percent% $row[id]";
 
+    $active           = $row['inactive'] ? 'inactive' : 'active';
     $case_number      = DATASOURCE_CITATION."_$row[id]";
+    $case_status      = DATASOURCE_CITATION."_$row[status]_$active";
     $violation_number = $case_number;
     $fee_id           = $case_number;
 
@@ -187,6 +189,5 @@ foreach ($result as $row) {
             ]);
         }
     }
-
 }
 echo "\n";

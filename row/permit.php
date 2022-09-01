@@ -98,12 +98,13 @@ foreach ($result as $row) {
     if ($issue_date < $apply_date) { $apply_date = $issue_date; }
 
     $permit_number = $row['permit_num'];
+    $permit_status = DATASOURCE_ROW."_$row[status]";
 
     $insert_permit->execute([
         'permit_type'             => 'Excavation',
         'permit_number'           => $permit_number,
         'permit_sub_type'         => $row['permit_type'],
-        'permit_status'           => $row['status'     ],
+        'permit_status'           => $permit_status,
         'permit_description'      => $row['project'    ],
         'apply_date'              => $apply_date,
         'issue_date'              => $issue_date,

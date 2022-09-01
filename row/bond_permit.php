@@ -49,11 +49,12 @@ foreach ($result as $row) {
 
     $company       = DATASOURCE_ROW.'_companies_'   .$row['company_id'];
     $permit_number = DATASOURCE_ROW.'_company_bond_'.$row['company_id'];
+    $permit_status = DATASOURCE_ROW."_bond"         .$row['status'    ];
 
     $insert_permit->execute([
         'permit_number' => $permit_number,
         'permit_type'   => 'Bond Permit',
-        'permit_status' => $row['status'     ],
+        'permit_status' => $permit_status,
         'apply_date'    => $row['issued' ] ?? '2000-01-01',
         'expire_date'   => $row['expires'],
         'legacy_data_source_name' => DATASOURCE_ROW
