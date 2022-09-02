@@ -44,25 +44,25 @@ left join (
 where permit.PMPERMITID='7450d8ba-dd77-4799-97fb-023e9b0684c0';
 
 
-select t.name,
-       r.displayname,
-       r.customfieldtablecolumnrefid,
-       v.value
-from customfieldtable t
-join customfieldtablecolumnref  r on r.customfieldtableid=t.customfieldtableid
-left join (
-    select objectid,
-           cftablecolumnrefid,
-           stringvalue as value
-    from customsavertblcol_str
-    union
-    select objectid,
-           cftablecolumnrefid,
-           intvalue as value
-    from customsavertblcol_int
-) v on v.cftablecolumnrefid=r.customfieldtablecolumnrefid
-where t.name='Rental Property Information'
-  and v.objectid='7450d8ba-dd77-4799-97fb-023e9b0684c0';
+select min(case displayname when 'Structure Identifier' then value end) as structure,
+       min(case displayname when 'Units'                then value end) as units,
+       min(case displayname when 'Bedrooms'             then value end) as bedrooms,
+       min(case displayname when 'Occupancy'            then value end) as occupancy
+from (
+    select v.rownumber,
+           r.displayname,
+           v.value
+    from customfieldtable t
+    join customfieldtablecolumnref  r on r.customfieldtableid=t.customfieldtableid
+    left join (
+        select rownumber, objectid, cftablecolumnrefid, stringvalue as value from customsavertblcol_str
+        union
+        select rownumber, objectid, cftablecolumnrefid,    intvalue as value from customsavertblcol_int
+    ) v on v.cftablecolumnrefid=r.customfieldtablecolumnrefid
+    where t.name='Rental Property Information'
+      and v.objectid='8679E41F-88CF-4F61-B477-E90C83D84298'
+) as d
+group  by rownumber;
 
 
 select  wfs.name as workflow_step,
@@ -75,3 +75,4 @@ join dbo.iminspectionactref   ia   on ia.objectid=wfas.pmpermitwfactionstepid
 join dbo.iminspection         i    on i.iminspectionid=ia.iminspectionid
 join dbo.iminspectionstatus   s    on i.iminspectionstatusid=s.iminspectionstatusid
 where wfs.pmpermitid='7450d8ba-dd77-4799-97fb-023e9b0684c0';
+
