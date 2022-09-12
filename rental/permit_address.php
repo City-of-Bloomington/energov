@@ -75,7 +75,8 @@ $sql = "select r.id,
                a.subunit_id,
                a.sud_type,
                a.sud_num,
-               a.street_address_id
+               a.street_address_id,
+               r.inactive
         from rental.registr  r
         join rental.address2 a on r.id=a.registr_id
         left join (
@@ -94,9 +95,10 @@ foreach ($result as $row) {
     echo chr(27)."[2K\rrental/permit_address: $percent% $row[id] => ";
     echo "$row[street_num] $row[street_dir] $row[street_name] $row[street_type] $row[sud_type] $row[sud_num]";
 
-    $city  = 'Bloomington';
-    $state = 'IN';
-    $zip   = null;
+    $city   = 'Bloomington';
+    $state  = 'IN';
+    $zip    = null;
+    $active = $row['inactive'] ? 'inactive' : 'active';
 
     $permit_number = DATASOURCE_RENTAL."_$row[id]";
 
@@ -127,19 +129,21 @@ foreach ($result as $row) {
         'zip'               => $zip,
         'country_type'      => COUNTRY_TYPE,
     ]);
-    $insert_inspection->execute([
-        'inspection_case_number' => $permit_number,
-        'street_number'     => $row['street_num' ],
-        'pre_direction'     => $row['street_dir' ],
-        'street_name'       => $row['street_name'],
-        'street_type'       => $row['street_type'],
-        'post_direction'    => $row['post_dir'   ],
-        'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
-        'city'              => $city,
-        'state_code'        => $state,
-        'zip'               => $zip,
-        'country_type'      => COUNTRY_TYPE,
-    ]);
+    if ($active == 'active') {
+        $insert_inspection->execute([
+            'inspection_case_number' => $permit_number,
+            'street_number'     => $row['street_num' ],
+            'pre_direction'     => $row['street_dir' ],
+            'street_name'       => $row['street_name'],
+            'street_type'       => $row['street_type'],
+            'post_direction'    => $row['post_dir'   ],
+            'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+            'city'              => $city,
+            'state_code'        => $state,
+            'zip'               => $zip,
+            'country_type'      => COUNTRY_TYPE,
+        ]);
+    }
     if (   !empty($info['address']['state_plane_x'])
         && !empty($info['address']['state_plane_y'])) {
         $parcels = $ARCGIS->parcels('/Energov/EnergovData/MapServer/1',
@@ -153,10 +157,12 @@ foreach ($result as $row) {
                         'permit_number' => $permit_number,
                         'parcel_number' => $p['pin_18']
                     ]);
-                    $insert_inspection_parcel->execute([
-                        'inspection_case_number' => $permit_number,
-                        'parcel_number'          => $p['pin_18']
-                    ]);
+                    if ($active == 'active') {
+                        $insert_inspection_parcel->execute([
+                            'inspection_case_number' => $permit_number,
+                            'parcel_number'          => $p['pin_18']
+                        ]);
+                    }
                 }
             }
         }

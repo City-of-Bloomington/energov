@@ -45,8 +45,14 @@ $inspection_fields = [
     'inspection_case_type',
     'inspection_case_status',
     'create_date',
+    'inspected_date_start',
     'last_inspection_date',
     'run_schedule'
+];
+
+$pic_fields = [
+    'permit_number',
+    'inspection_case_number'
 ];
 
 $columns = implode(',', $fields);
@@ -65,6 +71,9 @@ $columns = implode(',', $inspection_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $inspection_fields));
 $insert_inspection = $DCT->prepare("insert into inspection_case ($columns) values($params)");
 
+$columns = implode(',', $pic_fields);
+$params  = implode(',', array_map(fn($f): string => ":$f", $pic_fields));
+$insert_pic = $DCT->prepare("insert into permit_inspection_case ($columns) values($params)");
 
 $sql = "select s.identifier,
                u.units,
@@ -185,13 +194,21 @@ foreach ($result as $row) {
         'Units'          => $totalUnits,
     ]);
 
-    $insert_inspection->execute([
-        'inspection_case_number' => $permit_number,
-        'inspection_case_status' => $permit_status,
-        'inspection_case_type'   => 'Recurring Rental Property Inspection',
-        'create_date'            => $apply_date,
-        'last_inspection_date'   => $inspections[0]['inspection_date'] ?? null,
-        'run_schedule'           => $permit_length ? "$permit_length years" : null
-    ]);
+    if ($active == 'active') {
+        $insert_inspection->execute([
+            'inspection_case_number' => $permit_number,
+            'inspection_case_status' => $permit_status,
+            'inspection_case_type'   => 'Recurring Rental Property Inspection',
+            'create_date'            => $apply_date,
+            'inspected_date_start'   => $apply_date,
+            'last_inspection_date'   => $inspections[0]['inspection_date'] ?? null,
+            'run_schedule'           => $permit_length ? "$permit_length years" : null
+        ]);
+
+        $insert_pic->execute([
+            'permit_number'          => $permit_number,
+            'inspection_case_number' => $permit_number
+        ]);
+    }
 }
 echo "\n";

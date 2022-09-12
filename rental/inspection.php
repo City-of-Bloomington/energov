@@ -45,8 +45,10 @@ $sql     = "select i.insp_id,
                    i.has_affidavit,
                    i.violations,
                    i.smook_detectors,
-                   i.life_safety
-            from rental.inspections i";
+                   i.life_safety,
+                   r.inactive
+            from rental.inspections i
+            join rental.registr     r on r.id=i.id";
 $query   = $RENTAL->query($sql);
 $result  = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total   = count($result);
@@ -58,10 +60,12 @@ foreach ($result as $row) {
 
     $permit_number     = DATASOURCE_RENTAL."_$row[id]";
     $inspection_number = DATASOURCE_RENTAL."_$row[insp_id]";
+    $active            = $row['inactive'] ? 'inactive' : 'active';
+    $case_number       = $active=='active' ? $permit_number : null;
 
     $insert_inspection->execute([
         'inspection_number'      => $inspection_number,
-        'inspection_case_number' => $permit_number,
+        'inspection_case_number' => $case_number,
         'inspection_type'        => $row['inspection_type'],
         'inspection_status'      => $row['time_status'    ],
         'completed'              => 1,

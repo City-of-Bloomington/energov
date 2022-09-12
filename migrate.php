@@ -45,6 +45,7 @@ $DCT->query('delete from permit_fee_adjustment');
 $DCT->query('delete from permit_fee');
 $DCT->query('delete from permit_activity');
 $DCT->query('delete from permit_note');
+$DCT->query('delete from permit_inspection_case');
 $DCT->query('delete from permit_inspection');
 $DCT->query('delete from inspection_additional_fields');
 $DCT->query('delete from inspection');
