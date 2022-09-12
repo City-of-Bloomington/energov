@@ -56,7 +56,8 @@ $sql    = "select b.id,
            from row.bonds b
            join bond_companies  bc on bc.id=b.bond_company_id
            join company_contacts c on  c.id=b.company_contact_id
-           where bond_num is not null";
+           where bond_num is not null
+             and amount > 1";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);

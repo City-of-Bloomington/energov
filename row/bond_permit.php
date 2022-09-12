@@ -37,6 +37,7 @@ $sql    = "select c.company_id,
                 join bonds        b on c.id=b.company_contact_id
            left join excavpermits p on b.id=p.bond_id
            where c.company_id is not null
+             and b.amount > 1
            group by c.company_id";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);

@@ -82,7 +82,7 @@ $sql = "select p.id,
         from      excavpermits      p
         left join inspectors        i on  p.reviewer_id=i.user_id
              join company_contacts pc on pc.id=p.company_contact_id
-        left join bonds             b on  b.id=p.bond_id
+        left join bonds             b on  b.id=p.bond_id and b.amount>1
              join company_contacts bc on bc.id=b.company_contact_id";
 $query  = $ROW->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
