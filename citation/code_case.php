@@ -6,6 +6,7 @@
  * @param $DCT       PDO connection to DCT database
  */
 declare (strict_types=1);
+define('THREE_YEARS', 1095);
 $case_fields = [
     'case_number',
     'case_type',
@@ -87,6 +88,7 @@ $sql = "select c.id,
                c.amount,
                c.balance,
                c.date_writen,
+               datediff(now(), c.date_writen) as age,
                c.compliance_date,
                c.date_complied,
                greatest(coalesce(date_writen,             0),
@@ -108,9 +110,19 @@ foreach ($result as $row) {
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rcitation/code_case: $percent% $row[id]";
 
-    $active           = $row['inactive'] ? 'inactive' : 'active';
+    $status = $row['status'];
+    $active = $row['inactive'] ? 'inactive' : 'active';
+
+    if ($status == 'SENT TO LEGAL' && $row['legal_status']) {
+        $status = $row['legal_status'];
+    }
+    if ((int)$row['age'] > THREE_YEARS) {
+        $status = 'archive';
+        $active = 'inactive';
+    }
+
     $case_number      = DATASOURCE_CITATION."_$row[id]";
-    $case_status      = DATASOURCE_CITATION."_$row[status]_$active";
+    $case_status      = DATASOURCE_CITATION."_{$status}_{$active}";
     $violation_number = $case_number;
     $fee_id           = $case_number;
 
@@ -123,15 +135,11 @@ foreach ($result as $row) {
          $closed_date = $row['latest_date'];
     }
 
-    $status = $row['status'];
-    if ($status == 'SENT TO LEGAL' && $row['legal_status']) {
-        $status = $row['legal_status'];
-    }
 
     $insert_case->execute([
         'case_number'      => $case_number,
         'case_type'        => 'Title 6',
-        'case_status'      => $status,
+        'case_status'      => $case_status,
         'case_description' => $row['name'       ],
         'assigned_to_user' => $row['empid'      ],
         'open_date'        => $row['date_writen'],
