@@ -2,6 +2,9 @@ Post Migration
 --------------
 After running the migration, we need to manually add some information that could not be migrated programmatically.
 
+## Unused Contacts
+* row_bond_companies_234 - City of Bloomington
+
 ## Rental Payments for unpaid bills
 We migrated all the unpaid bills, but a few of them might have some portion already paid.  We'll need to manually enter the payments for the not-fully-paid bills.  Last time I checked, there was only one bill, but that could change over time.
 
