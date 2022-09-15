@@ -35,6 +35,9 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
+#-----------------------
+# Agents
+#-----------------------
 $sql    = "select distinct a.id,
                            a.fname,
                            a.lname,
@@ -85,6 +88,9 @@ foreach ($result as $row) {
 }
 echo "\n";
 
+#-----------------------
+# Owners
+#-----------------------
 $sql    = "select distinct o.id,
                            o.fname,
                            o.lname,
@@ -127,6 +133,61 @@ foreach ($result as $row) {
         'street_number'     => $row['address'],
         'address_line_3'    => !empty($row['rr'   ]) ? "RR $row[rr]"        : null,
         'po_box'            => !empty($row['pobox']) ? "PO BOX $row[pobox]" : null,
+        'city'              => $row['city' ],
+        'state_code'        => $row['state'],
+        'zip'               => $row['zip'  ],
+        'country_type'      => COUNTRY_TYPE,
+    ]);
+}
+echo "\n";
+
+#-----------------------
+# Tenants
+#-----------------------
+$sql = "select c.id,
+               concat_ws(' ', c.address_street_number,
+                              c.address_street_direction,
+                              c.address_street_name,
+                              c.address_street_type,
+                              c.sud_type,
+                              c.sud_num) as address,
+               c.address_city    as city,
+               c.address_state   as state,
+               c.address_zipcode as zip,
+               t.id     as tenant_id,
+               t.fname,
+               t.lname
+        from citations       c
+        join tenants  t on c.id=t.cite_id
+        where c.status not in ('WARNING', 'VOID', 'ADMIN VOID', 'PAID', 'UNCOLLECTABLE')
+        and c.balance>0
+        and datediff(now(), c.date_writen) < 1095";
+$query  = $CITATION->query($sql);
+$result = $query->fetchAll(\PDO::FETCH_ASSOC);
+$total  = count($result);
+$c      = 0;
+foreach ($result as $row) {
+    $c++;
+    $percent = round(($c / $total) * 100);
+    echo chr(27)."[2K\rcitation/contact tenants: $percent% $row[tenant_id]";
+
+    $contact_id  = DATASOURCE_CITATION."_tenant_$row[tenant_id]";
+
+    $insert_contact->execute([
+        'contact_id'    => $contact_id,
+        'first_name'    => $row['fname'],
+        'last_name'     => $row['lname'],
+        'isactive'      => 0,
+        'is_company'    => 0,
+        'is_individual' => 1,
+        'legacy_data_source_name' => DATASOURCE_CITATION
+    ]);
+
+    $insert_address->execute([
+        'contact_id'        => $contact_id,
+        'street_number'     => $row['address'],
+        'address_line_3'    => null,
+        'po_box'            => null,
         'city'              => $row['city' ],
         'state_code'        => $row['state'],
         'zip'               => $row['zip'  ],
