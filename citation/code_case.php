@@ -170,12 +170,13 @@ foreach ($result as $row) {
         && !in_array($row['status'], ['WARNING', 'PAID', 'VOID', 'UNCOLLECTABLE', 'ADMIN VOID'])
         &&  (float)$row['balance'] > 0) {
 
-        $amount = (int)$row['amount'];
+        $amount   = (int)$row['amount'];
+        $fee_type = $row['name'];
         switch ($amount) {
-            case  15: $fee_type = 'Title 6 6.04.110'; break;
-            case  50: $fee_type = 'Title 6 First';    break;
-            case 100: $fee_type = 'Title 6 Second';   break;
-            case 150: $fee_type = 'Title 6 Third';    break;
+            case  15: break;
+            case  50: $fee_type .= ' - First';    break;
+            case 100: $fee_type .= ' - Second';   break;
+            case 150: $fee_type .= ' - Third';    break;
             default: die('Invalid fee amount');
         }
 
