@@ -19,10 +19,6 @@ $contact_fields = [
 $address_fields = [
     'contact_id',
     'street_number',
-    'pre_direction',
-    'street_name',
-    'street_type',
-    'unit_suite_number',
     'address_line_3',
     'po_box',
     'city',
@@ -39,7 +35,22 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$query  = $NOV->query('select * from owners');
+$query  = $NOV->query("select o.id,
+                              o.fname,
+                              o.lname,
+                              concat_ws(' ', o.street_num,
+                                             o.street_dir,
+                                             o.street_name,
+                                             o.street_type,
+                                             o.sud_type,
+                                             o.sud_num) as address,
+                              o.city,
+                              o.state,
+                              o.zip,
+                              o.pobox,
+                              o.rr,
+                              o.is_business
+                       from owners o;");
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
 $c      = 0;
@@ -55,18 +66,14 @@ foreach ($result as $row) {
         'first_name'    => $row['fname'],
         'last_name'     => $row['lname'],
         'isactive'      => 0,
-        'is_company'    => 0,
-        'is_individual' => 1,
+        'is_company'    => $row['is_business'] ? 1 : 0,
+        'is_individual' => $row['is_business'] ? 0 : 1,
         'legacy_data_source_name' => DATASOURCE_NOV
     ]);
 
     $insert_address->execute([
         'contact_id'        => $contact_id,
-        'street_number'     => $row['street_num' ],
-        'pre_direction'     => $row['street_dir' ],
-        'street_name'       => $row['street_name'],
-        'street_type'       => $row['street_type'],
-        'unit_suite_number' => "$row[sud_num] $row[sud_type]",
+        'street_number'     => $row['address' ],
         'address_line_3'    => !empty($row['rr'   ]) ? "RR $row[rr]"        : null,
         'po_box'            => !empty($row['pobox']) ? "PO BOX $row[pobox]" : null,
         'city'              => $row['city' ],

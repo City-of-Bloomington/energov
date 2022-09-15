@@ -25,7 +25,7 @@ $note_fields = [
 ];
 $address_fields = [
     'contact_id',
-    'address_line_3',
+    'street_number',
     'city',
     'state_code',
     'zip',
@@ -105,7 +105,7 @@ foreach ($result as $row) {
     if ($row['address']) {
         $data = [
             'contact_id'        => $contact_id,
-            'address_line_3'    => $row['address'],
+            'street_number'     => $row['address'],
             'city'              => $row['city' ],
             'state_code'        => $row['state'],
             'zip'               => $row['zip'  ],

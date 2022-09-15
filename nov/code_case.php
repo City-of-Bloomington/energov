@@ -31,10 +31,6 @@ $violation_fields = [
 $address_fields = [
     'case_number',
     'street_number',
-    'pre_direction',
-    'street_name',
-    'street_type',
-    'unit_suite_number',
     'city',
     'state_code',
     'zip',
@@ -65,6 +61,12 @@ $insert_address  = $DCT->prepare("insert into code_case_address ($columns) value
 // $insert_fee  = $DCT->prepare("insert into code_case_violation_fee ($columns) values($params)");
 
 $sql    = "select c.*,
+                  concat_ws(' ', c.street_num,
+                                 c.street_dir,
+                                 c.street_name,
+                                 c.street_type,
+                                 c.sud_type,
+                                 c.sud_num) as address,
                   v.name  as violation_type,
                   s.name  as status,
                   u.empid as inspector
@@ -111,11 +113,7 @@ foreach ($result as $row) {
     if ($row['street_num'] && $row['street_name']) {
         $insert_address->execute([
             'case_number'       => $case_number,
-            'street_number'     => $row['street_num' ],
-            'pre_direction'     => $row['street_dir' ],
-            'street_name'       => $row['street_name'],
-            'street_type'       => $row['street_type'],
-            'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+            'street_number'     => $row['address'],
             'city'              => $row['city' ],
             'state_code'        => $row['state'],
             'zip'               => $row['zip'  ],

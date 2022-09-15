@@ -10,11 +10,6 @@ declare (strict_types=1);
 $address_fields = [
     'permit_number',
     'street_number',
-    'pre_direction',
-    'street_name',
-    'street_type',
-    'post_direction',
-    'unit_suite_number',
     'city',
     'state_code',
     'zip',
@@ -29,11 +24,6 @@ $parcel_fields = [
 $inspection_fields = [
     'inspection_case_number',
     'street_number',
-    'pre_direction',
-    'street_name',
-    'street_type',
-    'post_direction',
-    'unit_suite_number',
     'city',
     'state_code',
     'zip',
@@ -67,14 +57,8 @@ $params  = implode(',', array_map(fn($f): string => ":$f", $inspection_parcel_fi
 $insert_inspection_parcel = $DCT->prepare("insert inspection_case_parcel ($columns) values($params)");
 
 $sql = "select r.id,
-               a.street_num,
-               a.street_dir,
-               a.street_name,
-               a.street_type,
-               a.post_dir,
-               a.subunit_id,
-               a.sud_type,
-               a.sud_num,
+               trim(a.street_num || ' ' || a.street_dir || ' ' || a.street_name || ' ' || a.street_type) as address,
+               trim(a.sud_type   || ' ' || a.sud_num) as subunit,
                a.street_address_id,
                r.inactive
         from rental.registr  r
@@ -93,21 +77,23 @@ foreach ($result as $row) {
     $c++;
     $percent = round(($c / $total) * 100);
     echo chr(27)."[2K\rrental/permit_address: $percent% $row[id] => ";
-    echo "$row[street_num] $row[street_dir] $row[street_name] $row[street_type] $row[sud_type] $row[sud_num]";
 
-    $city   = 'Bloomington';
-    $state  = 'IN';
-    $zip    = null;
-    $active = $row['inactive'] ? 'inactive' : 'active';
+    $address = trim("$row[address] $row[subunit]");
+    $city    = 'Bloomington';
+    $state   = 'IN';
+    $zip     = null;
+    $active  = $row['inactive'] ? 'inactive' : 'active';
+    echo $address;
 
     $permit_number = DATASOURCE_RENTAL."_$row[id]";
 
     if ($row['street_address_id']) {
         $info = MasterAddress::addressInfo((int)$row['street_address_id']);
         if (!empty($info['address'])) {
-            $city  = $info['address']['city' ];
-            $state = $info['address']['state'];
-            $zip   = $info['address']['zip'  ];
+            $address = trim($info['address']['streetAddress'].' '.$row['subunit']);
+            $city    = $info['address']['city' ];
+            $state   = $info['address']['state'];
+            $zip     = $info['address']['zip'  ];
         }
         else {
             echo "$row[street_address_id] ";
@@ -118,12 +104,7 @@ foreach ($result as $row) {
 
     $insert_address->execute([
         'permit_number'     => $permit_number,
-        'street_number'     => $row['street_num' ],
-        'pre_direction'     => $row['street_dir' ],
-        'street_name'       => $row['street_name'],
-        'street_type'       => $row['street_type'],
-        'post_direction'    => $row['post_dir'   ],
-        'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+        'street_number'     => $address,
         'city'              => $city,
         'state_code'        => $state,
         'zip'               => $zip,
@@ -132,12 +113,7 @@ foreach ($result as $row) {
     if ($active == 'active') {
         $insert_inspection->execute([
             'inspection_case_number' => $permit_number,
-            'street_number'     => $row['street_num' ],
-            'pre_direction'     => $row['street_dir' ],
-            'street_name'       => $row['street_name'],
-            'street_type'       => $row['street_type'],
-            'post_direction'    => $row['post_dir'   ],
-            'unit_suite_number' => trim("$row[sud_type] $row[sud_num]"),
+            'street_number'     => $address,
             'city'              => $city,
             'state_code'        => $state,
             'zip'               => $zip,

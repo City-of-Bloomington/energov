@@ -19,10 +19,6 @@ $contact_fields = [
 $address_fields = [
     'contact_id',
     'street_number',
-    'pre_direction',
-    'street_name',
-    'street_type',
-    'unit_suite_number',
     'address_line_3',
     'po_box',
     'city',
@@ -39,9 +35,22 @@ $columns = implode(',', $address_fields);
 $params  = implode(',', array_map(fn($f): string => ":$f", $address_fields));
 $insert_address = $DCT->prepare("insert into contact_address ($columns) values($params)");
 
-$sql    = "select distinct a.*
+$sql    = "select distinct a.id,
+                           a.fname,
+                           a.lname,
+                           concat_ws(' ', a.street_num,
+                                          a.street_dir,
+                                          a.street_name,
+                                          a.street_type,
+                                          a.sud_type,
+                                          a.sud_num) as address,
+                           a.city,
+                           a.state,
+                           a.zip,
+                           a.pobox,
+                           a.rr
            from agents a
-           join citation_agents c on a.id=c.agent_id";
+           join citation_agents c on a.id=c.agent_id;";
 $query  = $CITATION->query($sql);
 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
 $total  = count($result);
@@ -65,11 +74,7 @@ foreach ($result as $row) {
 
     $insert_address->execute([
         'contact_id'        => $contact_id,
-        'street_number'     => $row['street_num' ],
-        'pre_direction'     => $row['street_dir' ],
-        'street_name'       => $row['street_name'],
-        'street_type'       => $row['street_type'],
-        'unit_suite_number' => "$row[sud_num] $row[sud_type]",
+        'street_number'     => $row['address'],
         'address_line_3'    => !empty($row['rr'   ]) ? "RR $row[rr]"        : null,
         'po_box'            => !empty($row['pobox']) ? "PO BOX $row[pobox]" : null,
         'city'              => $row['city' ],
@@ -80,7 +85,20 @@ foreach ($result as $row) {
 }
 echo "\n";
 
-$sql    = "select distinct o.*
+$sql    = "select distinct o.id,
+                           o.fname,
+                           o.lname,
+                           concat_ws(' ', o.street_num,
+                                          o.street_dir,
+                                          o.street_name,
+                                          o.street_type,
+                                          o.sud_type,
+                                          o.sud_num) as address,
+                           o.city,
+                           o.state,
+                           o.zip,
+                           o.pobox,
+                           o.rr
            from owners o
            join citation_owners c on o.id=c.owner_id";
 $query  = $CITATION->query($sql);
@@ -106,11 +124,7 @@ foreach ($result as $row) {
 
     $insert_address->execute([
         'contact_id'        => $contact_id,
-        'street_number'     => $row['street_num' ],
-        'pre_direction'     => $row['street_dir' ],
-        'street_name'       => $row['street_name'],
-        'street_type'       => $row['street_type'],
-        'unit_suite_number' => "$row[sud_num] $row[sud_type]",
+        'street_number'     => $row['address'],
         'address_line_3'    => !empty($row['rr'   ]) ? "RR $row[rr]"        : null,
         'po_box'            => !empty($row['pobox']) ? "PO BOX $row[pobox]" : null,
         'city'              => $row['city' ],
