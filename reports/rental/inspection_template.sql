@@ -56,4 +56,4 @@ left join (
     join dbo.MAILINGADDRESS             aa on am.MAILINGADDRESSID=aa.MAILINGADDRESSID
     where at.NAME='Agent'
 ) agentaddress on permit.PMPERMITID=agentaddress.PMPERMITID
-where i.iminspectionid='c9486133-c04d-4cc9-aef9-2b52dd0b1c50';
+where i.iminspectionid='{?@IMINSPECTIONID}';
