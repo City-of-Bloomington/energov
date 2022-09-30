@@ -135,18 +135,21 @@ create table permit_activity (
 );
 
 create table permit_additional_fields (
-    permit_number varchar(100) not null,
-    TypeofHousing varchar(100),
-    PermitLength  int,
-    Buildings     int,
-    Units         int,
-    Bathrooms     numeric(3,1),
-    Stories       int,
-    Foundation    varchar(100),
-    Heat          varchar(100),
-    Attic         bit,
-    Affordable    bit,
-    Accessory     bit
+    permit_number  varchar(100) not null,
+    TypeofHousing  varchar(100),
+    PermitLength   int,
+    Buildings      int,
+    Units          int,
+    Bathrooms      numeric(3,1),
+    Stories        int,
+    Foundation     varchar(100),
+    Heat           varchar(100),
+    Attic          bit,
+    Affordable     bit,
+    Accessory      bit,
+    CutType        varchar(100),
+    Utility        varchar(100),
+    CutDescription varchar(500),
     foreign key (permit_number) references permit(permit_number)
 );
 
@@ -156,7 +159,10 @@ create table PERMIT_TABLE_custom_fields (
     Units                int,
     NumberOfBedrooms     int,
     OccupancyLoad        int,
-    SleepRooms           bit
+    SleepRooms           bit,
+    CutLength     varchar(100),
+    CutWidth      varchar(100),
+    CutDepth      varchar(100)
     foreign key (permit_number) references permit(permit_number)
 );
 

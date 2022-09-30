@@ -67,42 +67,43 @@ $DCT->query('delete from contact');
 
 $DCT->query("dbcc checkident('attachment_document', RESEED, 0)");
 
-include './rental/contact.php';
-include './rental/permit.php';
-include './rental/permit_contact.php';
-include './rental/permit_address.php';
-include './rental/inspection.php';
-include './rental/permit_inspection.php';
-include './rental/permit_note.php';
-include './rental/permit_activity.php';
-include './rental/permit_fee.php';
-// include './rental/payment.php';
-include './rental/attachment_document.php';
-
-include './row/contact.php';
-include './row/bond_permit.php';
-include './row/bond.php';
-// include './row/inspection.php';
-// include './row/permit_inspection.php';
+// include './rental/contact.php';
+// include './rental/permit.php';
+// include './rental/permit_contact.php';
+// include './rental/permit_address.php';
+// include './rental/inspection.php';
+// include './rental/permit_inspection.php';
+// include './rental/permit_note.php';
+// include './rental/permit_activity.php';
+// include './rental/permit_fee.php';
+// // include './rental/payment.php';
+// include './rental/attachment_document.php';
+//
+// include './row/contact.php';
+// include './row/bond_permit.php';
+// include './row/bond.php';
+// // include './row/inspection.php';
+// // include './row/permit_inspection.php';
 include './row/permit.php';
+include './row/permit_additional.php';
 
-include './citation/code_case.php';
-include './citation/code_case_activity.php';
-include './citation/contact.php';
-include './citation/code_case_contact.php';
-// include './citation/payment.php';
-include './citation/attachment_document.php';
-
-include './nov/contact.php';
-include './nov/code_case.php';
-include './nov/code_case_contact.php';
-
-// include './planning/permit.php';
-// include './planning/permit_address.php';
-// include './planning/plan_case.php';
-// include './planning/plan_address.php';
-
-include './de-dupe.php';
+// include './citation/code_case.php';
+// include './citation/code_case_activity.php';
+// include './citation/contact.php';
+// include './citation/code_case_contact.php';
+// // include './citation/payment.php';
+// include './citation/attachment_document.php';
+//
+// include './nov/contact.php';
+// include './nov/code_case.php';
+// include './nov/code_case_contact.php';
+//
+// // include './planning/permit.php';
+// // include './planning/permit_address.php';
+// // include './planning/plan_case.php';
+// // include './planning/plan_address.php';
+//
+// include './de-dupe.php';
 
 function db_connect(array $config): \PDO
 {

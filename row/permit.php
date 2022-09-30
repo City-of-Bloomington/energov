@@ -112,36 +112,36 @@ foreach ($result as $row) {
         'legacy_data_source_name' => DATASOURCE_ROW
     ]);
 
-    if ($row['bond_id']) {
-        // The bond permit should already exist for this bond_id
-        // The company and contact should be pulled from the Bond's company_contact_id
-        $company       = $row['company_id'] ? DATASOURCE_ROW.'_companies_'.$row['company_id'] : null;
-        $contact       = $row['contact_id'] ? DATASOURCE_ROW.'_contacts_' .$row['contact_id'] : null;
-        $principal     = $company ?? $contact;
-        $bond_permit   = $company
-                        ? DATASOURCE_ROW.'_company_bond_'.$row['company_id']
-                        : DATASOURCE_ROW.'_contact_bond_'.$row['contact_id'];
-        $insert_parent->execute([
-            'permit_number'        => $bond_permit,
-            'parent_permit_number' => $permit_number
-        ]);
-    }
-
-    if ($row['permit_company_id']) {
-        $insert_contact->execute([
-            'permit_number'           => $permit_number,
-            'contact_id'              => DATASOURCE_ROW."_companies_$row[permit_company_id]",
-            'contact_type'            => 'company',
-            'primary_billing_contact' => 1
-        ]);
-    }
-    if ($row['permit_contact_id']) {
-        $insert_contact->execute([
-            'permit_number'           => $permit_number,
-            'contact_id'              => DATASOURCE_ROW."_contacts_$row[permit_contact_id]",
-            'contact_type'            => 'contact',
-            'primary_billing_contact' => 0
-        ]);
-    }
+//     if ($row['bond_id']) {
+//         // The bond permit should already exist for this bond_id
+//         // The company and contact should be pulled from the Bond's company_contact_id
+//         $company       = $row['company_id'] ? DATASOURCE_ROW.'_companies_'.$row['company_id'] : null;
+//         $contact       = $row['contact_id'] ? DATASOURCE_ROW.'_contacts_' .$row['contact_id'] : null;
+//         $principal     = $company ?? $contact;
+//         $bond_permit   = $company
+//                         ? DATASOURCE_ROW.'_company_bond_'.$row['company_id']
+//                         : DATASOURCE_ROW.'_contact_bond_'.$row['contact_id'];
+//         $insert_parent->execute([
+//             'permit_number'        => $bond_permit,
+//             'parent_permit_number' => $permit_number
+//         ]);
+//     }
+//
+//     if ($row['permit_company_id']) {
+//         $insert_contact->execute([
+//             'permit_number'           => $permit_number,
+//             'contact_id'              => DATASOURCE_ROW."_companies_$row[permit_company_id]",
+//             'contact_type'            => 'company',
+//             'primary_billing_contact' => 1
+//         ]);
+//     }
+//     if ($row['permit_contact_id']) {
+//         $insert_contact->execute([
+//             'permit_number'           => $permit_number,
+//             'contact_id'              => DATASOURCE_ROW."_contacts_$row[permit_contact_id]",
+//             'contact_type'            => 'contact',
+//             'primary_billing_contact' => 0
+//         ]);
+//     }
 }
 echo "\n";
